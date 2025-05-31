@@ -1,7 +1,10 @@
 package com.example.osid.domain.mycar.entity;
 
 import com.example.osid.common.entity.BaseEntity;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -17,7 +20,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "mycars")
 public class Mycar extends BaseEntity {
 
-    @Id
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
 }
