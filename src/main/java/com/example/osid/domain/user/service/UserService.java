@@ -67,7 +67,7 @@ public class UserService {
 		UserUpdatedRequestDto userUpdatedRequestDto
 	) {
 		User user = verifyUser(customUserDetails.getId());
-		user.UpdatedUsere(userUpdatedRequestDto);
+		user.UpdatedUser(userUpdatedRequestDto);
 	}
 
 	private User verifyUser(Long userId) {
