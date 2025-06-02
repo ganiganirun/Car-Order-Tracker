@@ -33,6 +33,8 @@ public class OrderResponseDto {
 
 		private Long totalPrice;
 
+		private String merchantUid;
+
 		private OrderStatus orderStatus; // 주문 상태
 
 		private LocalDateTime createdAt;
@@ -89,6 +91,8 @@ public class OrderResponseDto {
 
 		private Long totalPrice;
 
+		private String merchantUid;
+
 		private OrderStatus orderStatus; // 주문 상태
 
 		private LocalDate expectedDeliveryAt; // 예상 출고일
@@ -118,6 +122,8 @@ public class OrderResponseDto {
 		private String address;
 
 		private Long totalPrice;
+
+		private String merchantUid;
 
 		private OrderStatus orderStatus; // 주문 상태
 
