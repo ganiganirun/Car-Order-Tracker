@@ -21,7 +21,7 @@ public class OrderResponseDto {
 
 		private Long id;
 
-		private String userName;
+		private Long userId;
 
 		private String dealerName;
 
