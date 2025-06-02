@@ -52,6 +52,18 @@ public class CommonResponse<T> {
                 .build();
     }
 
+    public static <T> CommonResponse<T> created() {
+        return CommonResponse.<T>builder()
+            .timestamp(LocalDateTime.now())
+            .isError(false)
+            .status(SuccessCode.CREATED.getHttpStatus())
+            .code(SuccessCode.CREATED.getCode())
+            .message(SuccessCode.CREATED.getMessage())
+            .data(null)
+            .errorResponse(null)
+            .build();
+    }
+
     public static <T> CommonResponse<T> created(T data) {
         return CommonResponse.<T>builder()
                 .timestamp(LocalDateTime.now())
