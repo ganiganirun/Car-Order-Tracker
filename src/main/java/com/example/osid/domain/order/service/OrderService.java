@@ -97,7 +97,7 @@ public class OrderService {
 		return OrderResponseDto.Add.builder()
 			.id(orders.getId())
 			.model(orders.getModel().getName())
-			.userName(orders.getUser().getName())
+			.userId(orders.getUser().getId())
 			.dealerName(orders.getDealer().getName())
 			.orderOptions(optionNames)
 			.merchantUid(orders.getMerchantUid())
