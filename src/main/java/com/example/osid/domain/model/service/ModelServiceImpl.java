@@ -6,12 +6,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.osid.common.exception.CustomException;
-import com.example.osid.common.exception.ErrorCode;
 import com.example.osid.domain.model.dto.ModelCreateRequest;
 import com.example.osid.domain.model.dto.ModelResponse;
 import com.example.osid.domain.model.dto.ModelUpdateRequest;
 import com.example.osid.domain.model.entity.Model;
+import com.example.osid.domain.model.exception.ModelErrorCode;
+import com.example.osid.domain.model.exception.ModelException;
 import com.example.osid.domain.model.repository.ModelRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -69,6 +69,6 @@ public class ModelServiceImpl implements ModelService {
 	//삭제되지 않은 모델만 조회
 	private Model findActiveModel(Long modelId) {
 		return modelRepository.findByIdAndDeletedAtIsNull(modelId)
-			.orElseThrow(() -> new CustomException(ErrorCode.ENTITY_NOT_FOUND));
+			.orElseThrow(() -> new ModelException(ModelErrorCode.MODEL_NOT_FOUND));
 	}
 }
