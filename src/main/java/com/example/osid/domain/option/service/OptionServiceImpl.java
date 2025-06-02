@@ -6,12 +6,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.osid.common.exception.CustomException;
-import com.example.osid.common.exception.ErrorCode;
 import com.example.osid.domain.option.dto.OptionRequest;
 import com.example.osid.domain.option.dto.OptionResponse;
 import com.example.osid.domain.option.dto.OptionUpdateRequest;
 import com.example.osid.domain.option.entity.Option;
+import com.example.osid.domain.option.exception.OptionErrorCode;
+import com.example.osid.domain.option.exception.OptionException;
 import com.example.osid.domain.option.repository.OptionRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -64,6 +64,6 @@ public class OptionServiceImpl implements OptionService {
 	//삭제되지 않은 모델만 조회
 	private Option findActiveOption(Long optionId) {
 		return optionRepository.findByIdAndDeletedAtIsNull(optionId)
-			.orElseThrow(() -> new CustomException(ErrorCode.ENTITY_NOT_FOUND));
+			.orElseThrow(() -> new OptionException(OptionErrorCode.OPTION_NOT_FOUND));
 	}
 }
