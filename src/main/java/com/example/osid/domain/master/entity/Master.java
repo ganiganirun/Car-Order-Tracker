@@ -26,6 +26,12 @@ public class Master extends BaseEntity {
     private String businessNumber; //사업자 번호
 
     @Column(nullable = false)
+    private String name; // 담당자 이름
+
+    @Column(nullable = false)
+    private String phoneNumber; //전화번호
+
+    @Column(nullable = false)
     private String email; //이메일
 
     @Column(nullable = false)
