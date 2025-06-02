@@ -45,7 +45,7 @@ public class MasterController {
 	@PatchMapping("/me")
 	public CommonResponse<Void> updatedMaster(
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
-		@RequestBody MasterUpdatedRequestDto masterUpdatedRequestDto
+		@Valid @RequestBody MasterUpdatedRequestDto masterUpdatedRequestDto
 	) {
 		masterService.updatedMaster(customUserDetails, masterUpdatedRequestDto);
 		return CommonResponse.ok();
