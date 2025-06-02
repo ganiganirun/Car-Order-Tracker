@@ -68,7 +68,7 @@ public class ModelController {
 	}
 
 	//모델 삭제(soft deleted)
-	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@ResponseStatus(HttpStatus.OK)
 	@DeleteMapping("/{modelId}")
 	public CommonResponse<Void> deleteModel(@PathVariable Long modelId) {
 		modelService.deleteModel(modelId);
