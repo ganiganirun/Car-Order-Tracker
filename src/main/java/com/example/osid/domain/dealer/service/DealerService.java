@@ -64,7 +64,7 @@ public class DealerService {
 		DealerUpdatedRequestDto dealerUpdatedRequestDto
 	) {
 		Dealer dealer = verifyDealeer(customUserDetails.getId());
-		dealer.UpdatedDelaer(dealerUpdatedRequestDto);
+		dealer.UpdatedDealer(dealerUpdatedRequestDto);
 	}
 
 	private Dealer verifyDealeer(Long dealerId) {
