@@ -72,6 +72,6 @@ public class ModelController {
 	@DeleteMapping("/{modelId}")
 	public CommonResponse<Void> deleteModel(@PathVariable Long modelId) {
 		modelService.deleteModel(modelId);
-		return CommonResponse.noContent();
+		return CommonResponse.ok();
 	}
 }
