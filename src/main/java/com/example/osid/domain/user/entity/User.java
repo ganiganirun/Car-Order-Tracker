@@ -67,7 +67,7 @@ public class User extends BaseEntity {
         this.address = address;
     }
 
-    public void UpdatedUsere(UserUpdatedRequestDto userUpdatedRequestDto) {
+    public void UpdatedUser(UserUpdatedRequestDto userUpdatedRequestDto) {
         if (userUpdatedRequestDto.getName() != null) {
             this.name = userUpdatedRequestDto.getName();
         }
