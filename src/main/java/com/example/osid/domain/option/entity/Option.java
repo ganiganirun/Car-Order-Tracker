@@ -1,6 +1,9 @@
 package com.example.osid.domain.option.entity;
 
+import java.time.LocalDateTime;
+
 import com.example.osid.common.entity.BaseEntity;
+import com.example.osid.domain.option.dto.OptionUpdateRequest;
 import com.example.osid.domain.option.enums.OptionCategory;
 
 import jakarta.persistence.Column;
@@ -37,11 +40,43 @@ public class Option extends BaseEntity {
 	@Column(nullable = false)
 	private String image; //옵션 이미지
 
-	@Column(nullable = false)
+	@Column(nullable = false, length = 50)
 	@Enumerated(EnumType.STRING)
 	private OptionCategory category; //옵션 카테고리
 
 	@Column(nullable = false)
 	private Long price; //옵션 가격
 
+	@Column
+	private LocalDateTime deletedAt; //삭제 여부
+
+	public Option(String name, String description, String image, OptionCategory category, Long price) {
+		this.name = name;
+		this.description = description;
+		this.image = image;
+		this.category = category;
+		this.price = price;
+	}
+
+	public void setDeletedAt() {
+		this.deletedAt = LocalDateTime.now();
+	}
+
+	public void updateOption(OptionUpdateRequest request) {
+		if (request.getName() != null) {
+			this.name = request.getName();
+		}
+		if (request.getDescription() != null) {
+			this.description = request.getDescription();
+		}
+		if (request.getImage() != null) {
+			this.image = request.getImage();
+		}
+		if (request.getCategory() != null) {
+			this.category = request.getCategory();
+		}
+		if (request.getPrice() != null) {
+			this.price = request.getPrice();
+		}
+	}
 }
