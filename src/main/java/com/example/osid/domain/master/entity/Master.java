@@ -69,7 +69,7 @@ public class Master extends BaseEntity {
         this.license = license;
     }
 
-    public void UpdateMaster(MasterUpdatedRequestDto masterUpdatedRequestDto) {
+    public void UpdatedMaster(MasterUpdatedRequestDto masterUpdatedRequestDto) {
         if (masterUpdatedRequestDto.getName() != null) {
             this.name = masterUpdatedRequestDto.getName();
         }

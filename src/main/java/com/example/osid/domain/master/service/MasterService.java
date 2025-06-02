@@ -66,7 +66,7 @@ public class MasterService {
 		MasterUpdatedRequestDto masterUpdatedRequestDto
 	) {
 		Master master = verifyMaster(customUserDetails.getId());
-		master.UpdateMaster(masterUpdatedRequestDto);
+		master.UpdatedMaster(masterUpdatedRequestDto);
 	}
 
 	private Master verifyMaster(Long masterId) {
