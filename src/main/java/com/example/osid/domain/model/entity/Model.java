@@ -1,6 +1,9 @@
 package com.example.osid.domain.model.entity;
 
+import java.time.LocalDateTime;
+
 import com.example.osid.common.entity.BaseEntity;
+import com.example.osid.domain.model.dto.ModelUpdateRequest;
 import com.example.osid.domain.model.enums.ModelCategory;
 import com.example.osid.domain.model.enums.ModelColor;
 
@@ -52,4 +55,46 @@ public class Model extends BaseEntity {
 	@Column(nullable = false)
 	private Long price; // 차량 가격
 
+	@Column
+	private LocalDateTime deletedAt; //삭제 여부
+
+	public Model(String name, ModelColor color, String description, String image, ModelCategory category,
+		String seatCount,
+		Long price) {
+		this.name = name;
+		this.color = color;
+		this.description = description;
+		this.image = image;
+		this.category = category;
+		this.seatCount = seatCount;
+		this.price = price;
+	}
+
+	public void setDeletedAt() {
+		this.deletedAt = LocalDateTime.now();
+	}
+
+	public void updateModel(ModelUpdateRequest request) {
+		if (request.getName() != null) {
+			this.name = request.getName();
+		}
+		if (request.getColor() != null) {
+			this.color = request.getColor();
+		}
+		if (request.getDescription() != null) {
+			this.description = request.getDescription();
+		}
+		if (request.getImage() != null) {
+			this.image = request.getImage();
+		}
+		if (request.getCategory() != null) {
+			this.category = request.getCategory();
+		}
+		if (request.getSeatCount() != null) {
+			this.seatCount = request.getSeatCount();
+		}
+		if (request.getPrice() != null) {
+			this.price = request.getPrice();
+		}
+	}
 }
