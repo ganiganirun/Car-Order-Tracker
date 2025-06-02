@@ -1,7 +1,6 @@
 package com.example.osid.domain.order.service;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -71,19 +70,15 @@ public class OrderService {
 		// 총 금액 계산
 		Long totalPrice = options.stream().mapToLong(Option::getPrice).sum() + model.getPrice();
 
-		// 차량 고유 번호 생성
-		String bodyNumber = UUID.randomUUID().toString();
-
 		Orders orders = Orders.builder()
 			.address(requestDto.getAddress())
-			.bodyNumber(bodyNumber)
 			.totalPrice(totalPrice)
 			.orderStatus(OrderStatus.ORDERED)
 			.user(user)
 			.dealer(dealer)
 			.model(model)
 			.build();
-		
+
 		List<OrderOption> orderOptions = options
 			.stream()
 			.map(option -> new OrderOption(orders, option))
@@ -105,6 +100,7 @@ public class OrderService {
 			.userName(orders.getUser().getName())
 			.dealerName(orders.getDealer().getName())
 			.orderOptions(optionNames)
+			.merchantUid(orders.getMerchantUid())
 			.address(orders.getAddress())
 			.totalPrice(orders.getTotalPrice())
 			.orderStatus(orders.getOrderStatus())
@@ -123,18 +119,22 @@ public class OrderService {
 		// 유동적으로 바꾸기 위해서 if문으로 관리
 		// 추후 다른 방법이 생기면 바뀔 예정
 
+		// 주소 수정
 		if (requestDto.getAddress() != null) {
 			orders.setAddress(requestDto.getAddress());
 		}
 
+		// 주문 상태 수정
 		if (requestDto.getOrderStatus() != null) {
 			orders.setOrderStatus(requestDto.getOrderStatus());
 		}
 
+		// 예상 출고일 수정
 		if (requestDto.getExpectedDeliveryAt() != null) {
 			orders.setExpectedDeliveryAt(requestDto.getExpectedDeliveryAt());
 		}
 
+		// 실제 출고일 수정
 		if (requestDto.getActualDeliveryAt() != null) {
 			orders.setActualDeliveryAt(requestDto.getActualDeliveryAt());
 		}
@@ -183,6 +183,7 @@ public class OrderService {
 					.orderOptions(optionNames)
 					.address(orders.getAddress())
 					.totalPrice(orders.getTotalPrice())
+					.merchantUid(orders.getMerchantUid())
 					.orderStatus(orders.getOrderStatus())
 					.expectedDeliveryAt(orders.getExpectedDeliveryAt())
 					.actualDeliveryAt(orders.getActualDeliveryAt())
@@ -201,6 +202,7 @@ public class OrderService {
 					.orderOptions(optionNames)
 					.address(orders.getAddress())
 					.totalPrice(orders.getTotalPrice())
+					.merchantUid(orders.getMerchantUid())
 					.orderStatus(orders.getOrderStatus())
 					.expectedDeliveryAt(orders.getExpectedDeliveryAt())
 					.actualDeliveryAt(orders.getActualDeliveryAt())
@@ -217,6 +219,7 @@ public class OrderService {
 					.orderOptions(optionNames)
 					.address(orders.getAddress())
 					.totalPrice(orders.getTotalPrice())
+					.merchantUid(orders.getMerchantUid())
 					.orderStatus(orders.getOrderStatus())
 					.expectedDeliveryAt(orders.getExpectedDeliveryAt())
 					.actualDeliveryAt(orders.getActualDeliveryAt())
@@ -226,6 +229,16 @@ public class OrderService {
 			default -> throw new CustomException(ErrorCode.FORBIDDEN); // 정의되지 않은 역할
 		}
 
+	}
+
+	// 주문 전체 조회
+	public Page<OrderResponseDto.FindAll> findAllOrder(Role role, Long id, Pageable pageable) {
+
+		Page<Orders> orders = orderSearch.findOrderAll(role, pageable, id);
+
+		return orders.map(
+			order -> new OrderResponseDto.FindAll(order.getId(), order.getUser().getName(), order.getDealer().getName(),
+				order.getModel().getName()));
 	}
 
 	// 주문 삭제
@@ -238,13 +251,4 @@ public class OrderService {
 
 	}
 
-	public Page<OrderResponseDto.FindAll> findAllOrder(Role role, Long id, Pageable pageable) {
-
-		Page<Orders> orders = orderSearch.findOrderAll(role, pageable, id);
-
-		return orders.map(
-			order -> new OrderResponseDto.FindAll(order.getId(), order.getUser().getName(), order.getDealer().getName(),
-				order.getModel().getName()));
-
-	}
 }
