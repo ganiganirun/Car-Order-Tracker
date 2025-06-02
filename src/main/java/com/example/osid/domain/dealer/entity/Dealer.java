@@ -55,7 +55,7 @@ public class Dealer extends BaseEntity {
         this.phoneNumber = phoneNumber;
     }
 
-    public void UpdateDelaer(DealerUpdatedRequestDto dealerUpdatedRequestDto) {
+    public void UpdatedDealer(DealerUpdatedRequestDto dealerUpdatedRequestDto) {
         if (dealerUpdatedRequestDto.getName() != null) {
             this.name = dealerUpdatedRequestDto.getName();
         }
