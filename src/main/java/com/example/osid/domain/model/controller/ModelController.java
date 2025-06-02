@@ -37,7 +37,7 @@ public class ModelController {
 	public CommonResponse<Void> createModel(@RequestBody @Valid ModelCreateRequest request) {
 
 		modelService.createModel(request);
-		return CommonResponse.created(null);
+		return CommonResponse.created();
 	}
 
 	//모델 단건 조회
