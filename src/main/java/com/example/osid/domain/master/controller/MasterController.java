@@ -42,7 +42,7 @@ public class MasterController {
 		return CommonResponse.ok(me);
 	}
 
-	@PatchMapping("me")
+	@PatchMapping("/me")
 	public CommonResponse<Void> updatedMaster(
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@RequestBody MasterUpdatedRequestDto masterUpdatedRequestDto
