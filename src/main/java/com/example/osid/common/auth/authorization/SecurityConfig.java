@@ -28,14 +28,22 @@ public class SecurityConfig {
 				sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			)
 			.authorizeHttpRequests(auth -> auth
-				// 1) 로그인·회원가입은 무조건 풀어두기
+				// 1) 모두 가능
 				.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-				.requestMatchers(HttpMethod.POST, "/api/users/signup").permitAll()         // ← User 회원가입
-				.requestMatchers(HttpMethod.POST, "/api/masters/signup").permitAll()       // ← Master 회원가입
-				.requestMatchers(HttpMethod.POST, "/api/dealers/signup").permitAll()       // ← Dealer 회원가입
-				// 2) 각 역할별 엔드포인트
+				.requestMatchers(HttpMethod.POST, "/api/users/signup").permitAll()        // ← User 회원가입
+				.requestMatchers(HttpMethod.POST, "/api/masters/signup").permitAll()      // ← Master 회원가입
+				.requestMatchers(HttpMethod.POST, "/api/dealers/signup").permitAll()      // ← Dealer 회원가입
+				.requestMatchers(HttpMethod.GET, "/api/model/**").permitAll() 		   	// 차량 모델 조회(단건/전체) → 모두 허용
+				.requestMatchers(HttpMethod.GET, "/api/option/**").permitAll() 		   	// 차량 옵션 조회(단건/전체) → 모두 허용
+				// 2) Master
 				.requestMatchers("/api/masters/**").hasRole("MASTER")
+				.requestMatchers("/api/model/**").hasRole("MASTER") 						// Model 생성, 수정, 삭제 → 마스터 허용
+				.requestMatchers("/api/option/**").hasRole("MASTER") 						// Option 생성, 수정, 삭제 → 마스터 허용
+
+				// 3) Dealer
 				.requestMatchers("/api/dealers/**").hasRole("DEALER")
+
+				// 4) User
 				.requestMatchers("/api/users/**").hasRole("USER")
 				// 3) 그 외는 인증만 있으면 OK
 				.anyRequest().authenticated()
