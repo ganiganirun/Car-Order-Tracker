@@ -24,13 +24,12 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-// @RequestMapping("/api/order")
 public class OrderController {
 
 	private final OrderService orderService;
 
 	// 주문 생성
-	@PostMapping("/api/dealer/order")
+	@PostMapping("/api/dealers/order")
 	public ResponseEntity<CommonResponse> createOrder(
 		@RequestBody OrderRequestDto.Add requestDto
 	) {
@@ -43,7 +42,7 @@ public class OrderController {
 	}
 
 	// 주문 수정
-	@PatchMapping("/api/dealer/order/{orderId}")
+	@PatchMapping("/api/dealers/order/{orderId}")
 	public ResponseEntity<CommonResponse> updateOrder(
 		@PathVariable Long orderId,
 		@RequestBody OrderRequestDto.Update requestDto
@@ -82,7 +81,7 @@ public class OrderController {
 	}
 
 	// 주문 삭제
-	@DeleteMapping("/api/dealer/order/{orderId}")
+	@DeleteMapping("/api/dealers/order/{orderId}")
 	public ResponseEntity<CommonResponse> deleteOrder(
 		@PathVariable Long orderId
 	) {
