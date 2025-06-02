@@ -1,12 +1,15 @@
 package com.example.osid.domain.order.service;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.osid.common.auth.CustomUserDetails;
 import com.example.osid.common.entity.enums.Role;
 import com.example.osid.common.exception.CustomException;
 import com.example.osid.common.exception.ErrorCode;
@@ -42,7 +45,7 @@ public class OrderService {
 	private final OrderSearch orderSearch;
 
 	// 주문 생성
-	public OrderResponseDto.Add createOrder(Long dealerId, OrderRequestDto.Add requestDto) {
+	public OrderResponseDto.Add createOrder(CustomUserDetails customUserDetails, OrderRequestDto.Add requestDto) {
 		/*
 		 * dealerId로 딜러 가져오기
 		 * 유저 이메일로 유저 가져오기
@@ -56,7 +59,7 @@ public class OrderService {
 		 * order 객체 저장
 		 * */
 
-		Dealer dealer = dealerRepository.findById(dealerId)
+		Dealer dealer = dealerRepository.findById(customUserDetails.getId())
 			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
 
 		User user = userRepository.findByEmail(requestDto.getUserEmail())
@@ -111,10 +114,14 @@ public class OrderService {
 
 	// 주문 수정
 	@Transactional
-	public OrderResponseDto.Update updateOrder(Long orderId, OrderRequestDto.Update requestDto) {
+	public OrderResponseDto.Update updateOrder(CustomUserDetails customUserDetails, Long orderId,
+		OrderRequestDto.Update requestDto) {
 
 		Orders orders = orderRepository.findById(orderId)
 			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
+
+		// 검증
+		validateOrderOwner(orders, customUserDetails, extractRole(customUserDetails));
 
 		// 유동적으로 바꾸기 위해서 if문으로 관리
 		// 추후 다른 방법이 생기면 바뀔 예정
@@ -139,10 +146,8 @@ public class OrderService {
 			orders.setActualDeliveryAt(requestDto.getActualDeliveryAt());
 		}
 
-		List<String> optionNames = orders.getOrderOptions().stream()
-			.map(OrderOption::getOption)
-			.map(Option::getName)
-			.toList();
+		// List<Option> -> List<String>
+		List<String> optionNames = changeOptions(orders);
 
 		return OrderResponseDto.Update.builder()
 			.id(orders.getId())
@@ -160,21 +165,23 @@ public class OrderService {
 
 	}
 
-	public Object findOrder(Role role, Long id, Long orderId) {
+	public Object findOrder(CustomUserDetails customUserDetails, Long orderId) {
 
 		Orders orders = orderRepository.findById(orderId)
 			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
 
-		List<String> optionNames = orders.getOrderOptions().stream()
-			.map(OrderOption::getOption)
-			.map(Option::getName)
-			.toList();
+		// List<Option> -> List<String>
+		List<String> optionNames = changeOptions(orders);
 
+		// role값 가져오기
+		Role role = extractRole(customUserDetails);
+
+		// 검증
+		validateOrderOwner(orders, customUserDetails, role);
+
+		// role 에 따라 다른 값 return
 		switch (role) {
 			case USER -> {
-				if (!orders.getUser().getId().equals(id)) {
-					throw new CustomException(ErrorCode.FORBIDDEN); // 유저는 자신의 주문에 대해서만 조회 가능
-				}
 				return OrderResponseDto.UserView.builder()
 					.id(orders.getId())
 					.userName(orders.getUser().getName())
@@ -191,9 +198,6 @@ public class OrderService {
 					.build();
 			}
 			case DEALER -> {
-				if (!orders.getDealer().getId().equals(id)) {
-					throw new CustomException(ErrorCode.FORBIDDEN); // 딜러는 자신의 주문에 대해서만 조회 가능
-				}
 				return OrderResponseDto.AdminView.builder()
 					.id(orders.getId())
 					.userName(orders.getUser().getName())
@@ -226,15 +230,19 @@ public class OrderService {
 					.createdAt(orders.getCreatedAt())
 					.build();
 			}
-			default -> throw new CustomException(ErrorCode.FORBIDDEN); // 정의되지 않은 역할
+
 		}
 
+		return null;
 	}
 
 	// 주문 전체 조회
-	public Page<OrderResponseDto.FindAll> findAllOrder(Role role, Long id, Pageable pageable) {
+	public Page<OrderResponseDto.FindAll> findAllOrder(CustomUserDetails customUserDetails, Pageable pageable) {
 
-		Page<Orders> orders = orderSearch.findOrderAll(role, pageable, id);
+		// role 값 가져오기
+		Role role = extractRole(customUserDetails);
+
+		Page<Orders> orders = orderSearch.findOrderAll(role, pageable, customUserDetails.getId());
 
 		return orders.map(
 			order -> new OrderResponseDto.FindAll(order.getId(), order.getUser().getName(), order.getDealer().getName(),
@@ -242,12 +250,65 @@ public class OrderService {
 	}
 
 	// 주문 삭제
-	public void deleteOrder(Long orderId) {
+	public void deleteOrder(CustomUserDetails customUserDetails, Long orderId) {
 
 		Orders orders = orderRepository.findById(orderId)
 			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
 
+		// 검증
+		validateOrderOwner(orders, customUserDetails, extractRole(customUserDetails));
+
 		orderRepository.delete(orders);
+
+	}
+
+	// role 가져오기
+	private Role extractRole(CustomUserDetails customUserDetails) {
+
+		Collection<? extends GrantedAuthority> grantedAuthorities = customUserDetails.getAuthorities();
+
+		String authorityString = grantedAuthorities.stream()
+			.findFirst()
+			.map(GrantedAuthority::getAuthority)
+			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
+
+		Role role = Role.valueOf(authorityString.replace("ROLE_", ""));
+
+		return role;
+	}
+
+	// 검증
+	private void validateOrderOwner(Orders orders, CustomUserDetails userDetails, Role role) {
+		Long userId = userDetails.getId();
+
+		switch (role) {
+			case USER -> {
+				if (!orders.getUser().getId().equals(userId)) {
+					throw new CustomException(ErrorCode.FORBIDDEN);
+				}
+			}
+
+			case DEALER -> {
+				if (!orders.getDealer().getId().equals(userId)) {
+					throw new CustomException(ErrorCode.FORBIDDEN);
+				}
+			}
+
+			case MASTER -> {
+				// MASTER는 모든 주문에 접근 가능
+			}
+
+			default -> throw new CustomException(ErrorCode.FORBIDDEN);
+
+		}
+	}
+
+	private List<String> changeOptions(Orders orders) {
+
+		return orders.getOrderOptions().stream()
+			.map(OrderOption::getOption)
+			.map(Option::getName)
+			.toList();
 
 	}
 

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.osid.common.entity.enums.Role;
+import com.example.osid.common.auth.CustomUserDetails;
 import com.example.osid.common.response.CommonResponse;
 import com.example.osid.domain.order.dto.request.OrderRequestDto;
 import com.example.osid.domain.order.dto.response.OrderResponseDto;
@@ -31,11 +32,11 @@ public class OrderController {
 	// 주문 생성
 	@PostMapping("/api/dealers/order")
 	public ResponseEntity<CommonResponse> createOrder(
-		@RequestBody OrderRequestDto.Add requestDto
+		@RequestBody OrderRequestDto.Add requestDto,
+		@AuthenticationPrincipal CustomUserDetails customUserDetails
 	) {
-		Long dealerId = 1L;
 
-		OrderResponseDto.Add order = orderService.createOrder(dealerId, requestDto);
+		OrderResponseDto.Add order = orderService.createOrder(customUserDetails, requestDto);
 
 		return new ResponseEntity<>(CommonResponse.created(order), HttpStatus.CREATED);
 
@@ -45,10 +46,11 @@ public class OrderController {
 	@PatchMapping("/api/dealers/order/{orderId}")
 	public ResponseEntity<CommonResponse> updateOrder(
 		@PathVariable Long orderId,
-		@RequestBody OrderRequestDto.Update requestDto
+		@RequestBody OrderRequestDto.Update requestDto,
+		@AuthenticationPrincipal CustomUserDetails customUserDetails
 	) {
 
-		OrderResponseDto.Update order = orderService.updateOrder(orderId, requestDto);
+		OrderResponseDto.Update order = orderService.updateOrder(customUserDetails, orderId, requestDto);
 
 		return new ResponseEntity<>(CommonResponse.ok(order), HttpStatus.OK);
 
@@ -57,12 +59,11 @@ public class OrderController {
 	// 주문 단건 조회
 	@GetMapping("/api/order/{orderId}")
 	public ResponseEntity<CommonResponse> findOrder(
-		@PathVariable Long orderId
+		@PathVariable Long orderId,
+		@AuthenticationPrincipal CustomUserDetails customUserDetails
 	) {
 
-		Role role = Role.USER;
-		Long id = 1L;
-		Object order = orderService.findOrder(role, id, orderId);
+		Object order = orderService.findOrder(customUserDetails, orderId);
 
 		return new ResponseEntity<>(CommonResponse.ok(order), HttpStatus.OK);
 	}
@@ -70,12 +71,11 @@ public class OrderController {
 	// 주문 전체 조회
 	@GetMapping("/api/order")
 	public ResponseEntity<CommonResponse> findOrder(
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
 	) {
 
-		Role role = Role.USER;
-		Long id = 1L;
-		Page<OrderResponseDto.FindAll> order = orderService.findAllOrder(role, id, pageable);
+		Page<OrderResponseDto.FindAll> order = orderService.findAllOrder(customUserDetails, pageable);
 
 		return new ResponseEntity<>(CommonResponse.ok(order), HttpStatus.OK);
 	}
@@ -83,9 +83,10 @@ public class OrderController {
 	// 주문 삭제
 	@DeleteMapping("/api/dealers/order/{orderId}")
 	public ResponseEntity<CommonResponse> deleteOrder(
-		@PathVariable Long orderId
+		@PathVariable Long orderId,
+		@AuthenticationPrincipal CustomUserDetails customUserDetails
 	) {
-		orderService.deleteOrder(orderId);
+		orderService.deleteOrder(customUserDetails, orderId);
 
 		return new ResponseEntity<>(CommonResponse.ok("주문이 삭제 되었습니다."), HttpStatus.OK);
 	}
