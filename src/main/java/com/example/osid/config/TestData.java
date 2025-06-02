@@ -60,7 +60,7 @@ public class TestData {
 				.image("https://example.com/sonata.jpg")
 				.category(ModelCategory.EASE)
 				.seatCount("5")
-				.price(20000000L)
+				.price(100L)
 				.build()
 		);
 		optionRepository.save(
@@ -69,7 +69,7 @@ public class TestData {
 				.description("차량에 자연광과 개방감을 더해주는 파노라마 썬루프")
 				.image("https://example.com/sunroof.jpg")
 				.category(OptionCategory.EXTERIOR)
-				.price(500000L)
+				.price(100L)
 				.build()
 		);
 
@@ -79,7 +79,7 @@ public class TestData {
 				.description("최신 지도와 경로 안내를 제공하는 인포테인먼트 내비게이션 시스템")
 				.image("https://example.com/navigation.jpg")
 				.category(OptionCategory.INFOTAINMENT)
-				.price(300000L)
+				.price(100L)
 				.build()
 		);
 
@@ -89,7 +89,7 @@ public class TestData {
 				.description("겨울철에도 따뜻하게 유지되는 앞좌석 열선 시트")
 				.image("https://example.com/heatedseat.jpg")
 				.category(OptionCategory.CONVENIENCE)
-				.price(200000L)
+				.price(100L)
 				.build()
 		);
 
@@ -99,7 +99,7 @@ public class TestData {
 				.description("충돌 위험 시 자동으로 브레이크를 작동시키는 안전 시스템")
 				.image("https://example.com/emergencybrake.jpg")
 				.category(OptionCategory.SAFETY)
-				.price(700000L)
+				.price(100L)
 				.build()
 		);
 
@@ -109,7 +109,7 @@ public class TestData {
 				.description("보다 다이나믹한 주행을 위한 강화 서스펜션")
 				.image("https://example.com/sportssuspension.jpg")
 				.category(OptionCategory.PERFORMANCE)
-				.price(800000L)
+				.price(100L)
 				.build()
 		);
 
