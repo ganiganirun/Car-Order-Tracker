@@ -11,7 +11,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum MyCarlErrorCode implements BaseCode {
 	MY_CAR_NOT_FOUND(HttpStatus.NOT_FOUND, "MC001", "존재하지 않는 차량입니다."),
-	CAR_ALREADY_OWNED(HttpStatus.CONFLICT, "MC002", "이미 등록된 차량입니다");
+	CAR_ALREADY_OWNED(HttpStatus.CONFLICT, "MC002", "이미 등록된 차량입니다"),
+	MY_CAR_NOT_OWED(HttpStatus.FORBIDDEN, "MC003", "접근 권한이 없습니다.");
 	private final HttpStatus httpStatus;
 	private final String code;
 	private final String message;

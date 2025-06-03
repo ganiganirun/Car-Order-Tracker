@@ -1,5 +1,7 @@
 package com.example.osid.domain.mycar.service;
 
+import java.util.Objects;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,7 +36,9 @@ public class MyCarServiceImpl implements MyCarService {
 	@Override
 	@Transactional(readOnly = true)
 	public MyCarResponse findMyCar(CustomUserDetails customUserDetails, Long myCarId) {
-		Mycar mycar = findMyCarOrElseThrow(customUserDetails, myCarId);
+		Mycar mycar = findMyCarOrElseThrow(myCarId);
+		Long userId = customUserDetails.getId();
+		validateMyCarOwner(userId, mycar.getUser().getId());
 		return new MyCarResponse(mycar.getOrders());
 	}
 
@@ -53,7 +57,9 @@ public class MyCarServiceImpl implements MyCarService {
 	@Override
 	@Transactional
 	public void deleteMyCar(CustomUserDetails customUserDetails, Long myCarId) {
-		Mycar mycar = findMyCarOrElseThrow(customUserDetails, myCarId);
+		Long userId = customUserDetails.getId();
+		Mycar mycar = findMyCarOrElseThrow(myCarId);
+		validateMyCarOwner(userId, mycar.getUser().getId());
 		mycar.setDeletedAt();
 	}
 
@@ -78,9 +84,15 @@ public class MyCarServiceImpl implements MyCarService {
 	}
 
 	// myCar 조회시 없으면 예외출력
-	private Mycar findMyCarOrElseThrow(CustomUserDetails customUserDetails, Long myCarId) {
-		Long userId = customUserDetails.getId();
-		return mycarRepository.findByIdAndUserIdAndDeletedAtIsNull(myCarId, userId)
+	private Mycar findMyCarOrElseThrow(Long myCarId) {
+		return mycarRepository.findByIdAndDeletedAtIsNull(myCarId)
 			.orElseThrow(() -> new MyCarException(MyCarlErrorCode.MY_CAR_NOT_FOUND));
+	}
+
+	// 로그인한 유저와 myCar 의 유저가 일지하는지 확인
+	private void validateMyCarOwner(Long userId, Long myCarUserId) {
+		if (!Objects.equals(myCarUserId, userId)) {
+			throw new MyCarException(MyCarlErrorCode.MY_CAR_NOT_OWED);
+		}
 	}
 }
