@@ -50,7 +50,8 @@ public class SecurityConfig {
 				.hasRole("MASTER")                        // Model 생성, 수정, 삭제 → 마스터 허용
 				.requestMatchers("/api/option/**")
 				.hasRole("MASTER")                        // Option 생성, 수정, 삭제 → 마스터 허용
-
+				.requestMatchers(HttpMethod.PATCH, "/api/dealers/role")
+				.hasRole("MASTER")                          // Dealer Role 수정
 				// 3) Dealer
 				.requestMatchers("/api/dealers/**")
 				.hasRole("DEALER")
