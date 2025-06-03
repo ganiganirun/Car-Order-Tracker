@@ -1,5 +1,7 @@
 package com.example.osid.domain.dealer.dto.response;
 
+import com.example.osid.domain.master.entity.Master;
+
 import lombok.Getter;
 
 @Getter
@@ -10,18 +12,21 @@ public class FindByDealerResponseDto {
 	private String name;
 	private String point;
 	private String phoneNumber;
+	private Master master;
 
 	public FindByDealerResponseDto(
 		Long id,
 		String email,
 		String name,
 		String point,
-		String phoneNumber
+		String phoneNumber,
+		Master master
 	) {
 		this.id = id;
 		this.email = email;
 		this.name = name;
 		this.point = point;
 		this.phoneNumber = phoneNumber;
+		this.master = master;
 	}
 }

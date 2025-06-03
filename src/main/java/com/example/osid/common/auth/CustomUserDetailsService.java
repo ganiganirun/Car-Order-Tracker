@@ -25,17 +25,17 @@ public class CustomUserDetailsService implements UserDetailsService {
 	@Override
 	public CustomUserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 		// Master 조회
-		Optional<Master> masterOpt = masterRepository.findByEmail(email);
+		Optional<Master> masterOpt = masterRepository.findByEmailAndIsDeletedFalse(email);
 		if (masterOpt.isPresent()) {
 			return CustomUserDetails.fromMaster(masterOpt.get());
 		}
 		// Dealer 조회
-		Optional<Dealer> dealerOpt = dealerRepository.findByEmail(email);
+		Optional<Dealer> dealerOpt = dealerRepository.findByEmailAndIsDeletedFalse(email);
 		if (dealerOpt.isPresent()) {
 			return CustomUserDetails.fromDealer(dealerOpt.get());
 		}
 		// User 조회
-		Optional<User> userOpt = userRepository.findByEmail(email);
+		Optional<User> userOpt = userRepository.findByEmailAndIsDeletedFalse(email);
 		if (userOpt.isPresent()) {
 			return CustomUserDetails.fromUser(userOpt.get());
 		}

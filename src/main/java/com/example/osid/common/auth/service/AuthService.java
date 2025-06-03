@@ -1,6 +1,6 @@
 package com.example.osid.common.auth.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.osid.common.auth.authentication.JwtUtil;
@@ -20,56 +20,61 @@ import com.example.osid.domain.user.exception.UserErrorCode;
 import com.example.osid.domain.user.exception.UserException;
 import com.example.osid.domain.user.repository.UserRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class AuthService {
+
 	private final UserRepository userRepository;
 	private final MasterRepository masterRepository;
 	private final DealerRepository dealerRepository;
+	private final PasswordEncoder passwordEncoder;
 	private final JwtUtil jwtUtil;
 
-	@Autowired
-	public AuthService(UserRepository userRepository, MasterRepository masterRepository,
-		DealerRepository dealerRepository, JwtUtil jwtUtil) {
-		this.userRepository = userRepository;
-		this.masterRepository = masterRepository;
-		this.dealerRepository = dealerRepository;
-		this.jwtUtil = jwtUtil;
-	}
-
 	public String login(LoginRequestDto loginRequestDto) {
-		// 이메일로 유저 찾기
+
 		String email = loginRequestDto.getEmail();
+		String rawPassword = loginRequestDto.getPassword();
 
-		// User, Master, Dealer 모두 체크
-		User user = userRepository.findByEmail(email).orElse(null);
-		Master master = masterRepository.findByEmail(email).orElse(null);
-		Dealer dealer = dealerRepository.findByEmail(email).orElse(null);
+		// 1) 활성 계정(isDeleted = false)만 조회
+		User user = userRepository.findByEmailAndIsDeletedFalse(email).orElse(null);
+		Master master = masterRepository.findByEmailAndIsDeletedFalse(email).orElse(null);
+		Dealer dealer = dealerRepository.findByEmailAndIsDeletedFalse(email).orElse(null);
 
-		// 각각의 존재 여부를 따로 체크하고 예외를 던지기
+		// 2) 세 테이블 모두 null 이면 “존재하지 않음” 에러
 		if (user == null && master == null && dealer == null) {
-			throw new CustomException(ErrorCode.USER_NOT_FOUND); // 모든 테이블에 없는 경우
+			throw new CustomException(ErrorCode.USER_NOT_FOUND);
 		}
 
-		// 비밀번호 확인
-		String password = loginRequestDto.getPassword();
-
-		if (user != null && user.getPassword().equals(password)) {
-			// JWT 토큰 생성 후 반환 (User)
-			return jwtUtil.createToken(email, user.getName(), "USER", user.getId());
-		} else if (master != null && master.getPassword().equals(password)) {
-			// JWT 토큰 생성 후 반환 (Master)
-			return jwtUtil.createToken(email, master.getName(), "MASTER", master.getId());
-		} else if (dealer != null && dealer.getPassword().equals(password)) {
-			// JWT 토큰 생성 후 반환 (Dealer)
-			return jwtUtil.createToken(email, dealer.getName(), "DEALER", dealer.getId());
-		} else if (master != null) {
-			throw new MasterException(MasterErrorCode.MASTER_INVALID_PASSWORD);  // 마스터 비밀번호가 틀림
-		} else if (dealer != null) {
-			throw new DealerException(DealerErrorCode.DEALER_INVALID_PASSWORD);  // 딜러 비밀번호가 틀림
-		} else if (user != null) {
-			throw new UserException(UserErrorCode.USER_INVALID_PASSWORD);  // 유저 비밀번호가 틀림
+		// 3) user 인증
+		if (user != null) {
+			if (passwordEncoder.matches(rawPassword, user.getPassword())) {
+				return jwtUtil.createToken(email, user.getName(), "USER", user.getId());
+			} else {
+				throw new UserException(UserErrorCode.USER_INVALID_PASSWORD);
+			}
 		}
 
-		return null;  // 이 줄은 사실상 도달하지 않음
+		// 4) master 인증
+		if (master != null) {
+			if (passwordEncoder.matches(rawPassword, master.getPassword())) {
+				return jwtUtil.createToken(email, master.getName(), "MASTER", master.getId());
+			} else {
+				throw new MasterException(MasterErrorCode.MASTER_INVALID_PASSWORD);
+			}
+		}
+
+		// 5) dealer 인증 (user, master가 null이면 dealer만 남음)
+		if (dealer != null) {
+			if (passwordEncoder.matches(rawPassword, dealer.getPassword())) {
+				return jwtUtil.createToken(email, dealer.getName(), "DEALER", dealer.getId());
+			} else {
+				throw new DealerException(DealerErrorCode.DEALER_INVALID_PASSWORD);
+			}
+		}
+
+		// 도달하지 않음
+		return null;
 	}
 }
