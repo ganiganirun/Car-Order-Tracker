@@ -6,6 +6,8 @@ import com.example.osid.domain.dealer.dto.request.DealerUpdatedRequestDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -23,44 +25,45 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Dealer extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(nullable = false)
-    private String email; //이메일
+	@Column(nullable = false)
+	private String email; //이메일
 
-    @Column(nullable = false)
-    private String password; //비밀번호
+	@Column(nullable = false)
+	private String password; //비밀번호
 
-    @Column(nullable = false)
-    private String name; //이름
+	@Column(nullable = false)
+	private String name; //이름
 
-    private String point = "미배정"; //지점
+	private String point = "미배정"; //지점
 
-    @Column(nullable = false)
-    private String phoneNumber; //전화번호
+	@Column(nullable = false)
+	private String phoneNumber; //전화번호
 
-    private Role role = Role.DEALER; //역할
+	@Enumerated(EnumType.STRING)
+	private Role role = Role.DEALER; //역할
 
-    public Dealer(
-        String email,
-        String password,
-        String name,
-        String phoneNumber
-    ) {
-        this.email = email;
-        this.password = password;
-        this.name = name;
-        this.phoneNumber = phoneNumber;
-    }
+	public Dealer(
+		String email,
+		String password,
+		String name,
+		String phoneNumber
+	) {
+		this.email = email;
+		this.password = password;
+		this.name = name;
+		this.phoneNumber = phoneNumber;
+	}
 
-    public void UpdatedDealer(DealerUpdatedRequestDto dealerUpdatedRequestDto) {
-        if (dealerUpdatedRequestDto.getName() != null) {
-            this.name = dealerUpdatedRequestDto.getName();
-        }
-        if (dealerUpdatedRequestDto.getPhoneNumber() != null) {
-            this.phoneNumber = dealerUpdatedRequestDto.getPhoneNumber();
-        }
-    }
+	public void UpdatedDealer(DealerUpdatedRequestDto dealerUpdatedRequestDto) {
+		if (dealerUpdatedRequestDto.getName() != null) {
+			this.name = dealerUpdatedRequestDto.getName();
+		}
+		if (dealerUpdatedRequestDto.getPhoneNumber() != null) {
+			this.phoneNumber = dealerUpdatedRequestDto.getPhoneNumber();
+		}
+	}
 }
