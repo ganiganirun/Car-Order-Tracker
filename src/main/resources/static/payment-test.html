@@ -1,0 +1,102 @@
+<!-- src/main/resources/static/payment-test.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>주문 및 결제</title>
+    <!-- jQuery와 iamport 스크립트는 반드시 <head>에 미리 불러와야 합니다 -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
+</head>
+<body>
+<h1>주문 및 결제</h1>
+<form id="order-form">
+    <label>이메일: <input type="email" id="userEmail" required></label><br>
+    <label>모델 ID: <input type="number" id="modelId" required></label><br>
+    <label>주소: <input type="text" id="address" required></label><br>
+    <label>옵션 ID들 (쉼표 구분): <input type="text" id="optionIds" required></label><br><br>
+    <button type="button" id="pay-btn">주문 생성 및 결제하기</button>
+</form>
+
+<script>
+    // 1) 토큰이 반드시 있어야만 주문을 시도합니다.
+    const token = localStorage.getItem('accessToken');
+
+    $('#pay-btn').on('click', function () {
+        // 2) 토큰 체크
+        if (!token) {
+            alert('로그인 후 토큰을 넣어주세요 (콘솔 → localStorage.setItem).');
+            return;
+        }
+
+        // 3) 입력값 가져오기
+        const userEmail = $('#userEmail').val();
+        const modelId = Number($('#modelId').val());
+        const address = $('#address').val();
+        const optionIds = $('#optionIds').val()
+            .split(',')
+            .map(i => Number(i.trim()));
+
+        // 4) orderData 객체
+        const orderData = {userEmail, modelId, address, option: optionIds};
+
+        // 5) 주문 생성 API 호출
+        $.ajax({
+            url: '/api/dealers/order',
+            type: 'POST',
+            contentType: 'application/json',
+            headers: {'Authorization': 'Bearer ' + token},
+            data: JSON.stringify(orderData),
+            success: function (response) {
+                const order = response.data;
+                // 주문 성공 시 결제 함수 호출
+                requestPayment(order.id, order.totalPrice, order.userId, order.merchantUid);
+            },
+            error: function (xhr) {
+                console.error(xhr);
+                alert("주문 생성 실패: " + xhr.status + " " + xhr.responseText);
+            }
+        });
+    });
+
+    function requestPayment(orderId, amount, userId, merchantUid) {
+        const IMP = window.IMP;
+        IMP.init("imp44576158"); // 실제 가맹점 식별코드로 교체
+
+        IMP.request_pay({
+            pg: "html5_inicis",
+            pay_method: "card",
+            merchant_uid: merchantUid,
+            name: "자동차 주문",
+            amount: amount,
+            buyer_email: $('#userEmail').val(),
+        }, function (rsp) {
+            if (rsp.success) {
+                // 결제 성공 시, 결제 확인 API 호출
+                $.ajax({
+                    url: `/api/v1/order/payment/${rsp.imp_uid}`,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    headers: {'Authorization': 'Bearer ' + token},
+                    data: JSON.stringify({
+                        impUid: rsp.imp_uid,
+                        merchantUid: merchantUid,
+                        amount: amount,
+                        userId: userId
+                    }),
+                    success: function () {
+                        alert("결제가 성공적으로 완료되었습니다.");
+                    },
+                    error: function (xhr) {
+                        console.error(xhr);
+                        alert("결제 확인 실패: " + xhr.status + " " + xhr.responseText);
+                    }
+                });
+            } else {
+                alert("결제에 실패하였습니다. 에러: " + rsp.error_msg);
+            }
+        });
+    }
+</script>
+</body>
+</html>
