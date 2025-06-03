@@ -58,6 +58,8 @@ public class SecurityConfig {
 				// 4) User
 				.requestMatchers("/api/users/**")
 				.hasRole("USER")
+				.requestMatchers("/api/myCar/**")
+				.hasRole("USER")
 				// 3) 그 외는 인증만 있으면 OK
 				.anyRequest()
 				.authenticated()

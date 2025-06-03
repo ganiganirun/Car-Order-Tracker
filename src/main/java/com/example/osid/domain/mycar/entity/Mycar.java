@@ -1,11 +1,19 @@
 package com.example.osid.domain.mycar.entity;
 
-import com.example.osid.common.entity.BaseEntity;
+import java.time.LocalDateTime;
 
+import com.example.osid.common.entity.BaseEntity;
+import com.example.osid.domain.order.entity.Orders;
+import com.example.osid.domain.user.entity.User;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,4 +32,23 @@ public class Mycar extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "orders_id", nullable = false)
+	private Orders orders;
+
+	@Column
+	private LocalDateTime deletedAt;
+
+	public Mycar(User user, Orders orders) {
+		this.user = user;
+		this.orders = orders;
+	}
+
+	public void setDeletedAt() {
+		this.deletedAt = LocalDateTime.now();
+	}
 }
