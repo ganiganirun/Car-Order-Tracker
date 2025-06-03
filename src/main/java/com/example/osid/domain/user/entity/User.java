@@ -1,5 +1,8 @@
 package com.example.osid.domain.user.entity;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import com.example.osid.common.entity.BaseEntity;
 import com.example.osid.common.entity.enums.Role;
 import com.example.osid.domain.user.dto.request.UserUpdatedRequestDto;
@@ -12,7 +15,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,56 +28,68 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class User extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String email; //이메일
+	@Column(nullable = false, unique = true)
+	private String email; //이메일
 
-    @Column(nullable = false)
-    private String password; //비밀번호
+	@Column(nullable = false)
+	private String password; //비밀번호
 
-    @Column(nullable = false)
-    private String name; //이름
+	@Column(nullable = false)
+	private String name; //이름
 
-    @Column(nullable = false)
-    private LocalDate dateOfBirth; //생년월일
+	@Column(nullable = false)
+	private LocalDate dateOfBirth; //생년월일
 
-    @Column(nullable = false)
-    private String phoneNumber; //전화번호
+	@Column(nullable = false)
+	private String phoneNumber; //전화번호
 
-    @Column(nullable = false)
-    private String address; //주소
+	@Column(nullable = false)
+	private String address; //주소
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private Role role = Role.USER;
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
+	private Role role = Role.USER;
 
-    public User(
-        String email,
-        String password,
-        String name,
-        LocalDate dateOfBirth,
-        String phoneNumber,
-        String address) {
-        this.email = email;
-        this.password = password;
-        this.name = name;
-        this.dateOfBirth = dateOfBirth;
-        this.phoneNumber = phoneNumber;
-        this.address = address;
-    }
+	@Column(nullable = false)
+	private boolean isDeleted = false;
 
-    public void UpdatedUser(UserUpdatedRequestDto userUpdatedRequestDto) {
-        if (userUpdatedRequestDto.getName() != null) {
-            this.name = userUpdatedRequestDto.getName();
-        }
-        if (userUpdatedRequestDto.getPhoneNumber() != null) {
-            this.phoneNumber = userUpdatedRequestDto.getPhoneNumber();
-        }
-        if (userUpdatedRequestDto.getAddress() != null) {
-            this.address = userUpdatedRequestDto.getAddress();
-        }
-    }
+	// null 허용: 삭제 전에는 null
+	private LocalDateTime deletedAt;
+
+	public User(
+		String email,
+		String password,
+		String name,
+		LocalDate dateOfBirth,
+		String phoneNumber,
+		String address) {
+		this.email = email;
+		this.password = password;
+		this.name = name;
+		this.dateOfBirth = dateOfBirth;
+		this.phoneNumber = phoneNumber;
+		this.address = address;
+	}
+
+	public void UpdatedUser(UserUpdatedRequestDto userUpdatedRequestDto) {
+		if (userUpdatedRequestDto.getName() != null) {
+			this.name = userUpdatedRequestDto.getName();
+		}
+		if (userUpdatedRequestDto.getPhoneNumber() != null) {
+			this.phoneNumber = userUpdatedRequestDto.getPhoneNumber();
+		}
+		if (userUpdatedRequestDto.getAddress() != null) {
+			this.address = userUpdatedRequestDto.getAddress();
+		}
+	}
+
+	// 소프트 딜리트: isDeleted = true, deletedAt = 현재 시각
+	public void softDeletedUser() {
+		this.isDeleted = true;
+		this.deletedAt = LocalDateTime.now();
+	}
 }
