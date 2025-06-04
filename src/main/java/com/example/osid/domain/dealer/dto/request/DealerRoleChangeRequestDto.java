@@ -1,7 +1,10 @@
 package com.example.osid.domain.dealer.dto.request;
 
+import com.example.osid.common.entity.enums.Role;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 @Getter
@@ -11,6 +14,6 @@ public class DealerRoleChangeRequestDto {
 	@NotBlank(message = "dealerEmail은 필수입니다.")
 	private String dealerEmail;
 
-	@NotBlank(message = "role은 필수입니다.")
-	private String role;
+	@NotNull(message = "role은 필수입니다.")
+	private Role role;
 }
