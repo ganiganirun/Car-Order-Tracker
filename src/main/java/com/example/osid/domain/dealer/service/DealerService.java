@@ -4,13 +4,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.osid.common.auth.CustomUserDetails;
+import com.example.osid.common.auth.EmailValidator;
 import com.example.osid.common.entity.enums.Role;
+import com.example.osid.domain.dealer.dto.request.DealerBranchChangeRequestDto;
 import com.example.osid.domain.dealer.dto.request.DealerDeletedRequestDto;
 import com.example.osid.domain.dealer.dto.request.DealerRoleChangeRequestDto;
 import com.example.osid.domain.dealer.dto.request.DealerSignUpRequestDto;
 import com.example.osid.domain.dealer.dto.request.DealerUpdatedRequestDto;
 import com.example.osid.domain.dealer.dto.response.FindByDealerResponseDto;
 import com.example.osid.domain.dealer.entity.Dealer;
+import com.example.osid.domain.dealer.enums.Branch;
 import com.example.osid.domain.dealer.exception.DealerErrorCode;
 import com.example.osid.domain.dealer.exception.DealerException;
 import com.example.osid.domain.dealer.repository.DealerRepository;
@@ -31,18 +34,12 @@ public class DealerService {
 	private final MasterRepository masterRepository;
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final EmailValidator emailValidator;
 
 	public void signUpDealer(DealerSignUpRequestDto dealerSignUpRequestDto) {
-		if (dealerRepository.findByEmail(dealerSignUpRequestDto.getEmail()).isPresent()) {
-			throw new DealerException(DealerErrorCode.EMAIL_ALREADY_EXISTS);
-		}
-		if (userRepository.findByEmail(dealerSignUpRequestDto.getEmail()).isPresent()) {
-			throw new DealerException(DealerErrorCode.EMAIL_ALREADY_EXISTS);
-		}
 
-		if (masterRepository.findByEmail(dealerSignUpRequestDto.getEmail()).isPresent()) {
-			throw new DealerException(DealerErrorCode.EMAIL_ALREADY_EXISTS);
-		}
+		// 공통된 이메일이 있는지 확인 ( Master, Dealer, User )
+		emailValidator.validateDuplicateEmail(dealerSignUpRequestDto.getEmail());
 
 		Master master = verifyActiveMaster(dealerSignUpRequestDto.getMasterEmail());
 
@@ -66,7 +63,7 @@ public class DealerService {
 			dealer.getId(),
 			dealer.getEmail(),
 			dealer.getName(),
-			dealer.getPoint(),
+			dealer.getBranch(),
 			dealer.getPhoneNumber(),
 			dealer.getMaster()
 		);
@@ -78,7 +75,7 @@ public class DealerService {
 		DealerUpdatedRequestDto dealerUpdatedRequestDto
 	) {
 		Dealer dealer = verifyActiveDealer(customUserDetails.getEmail());
-		dealer.UpdatedDealer(dealerUpdatedRequestDto);
+		dealer.updatedDealer(dealerUpdatedRequestDto);
 	}
 
 	@Transactional
@@ -113,14 +110,7 @@ public class DealerService {
 			throw new DealerException(DealerErrorCode.DEALER_NOT_BELONG_TO_MASTER);
 		}
 
-		// String → Role enum 변환 & 예외 처리
-		Role newRole;
-		try {
-			newRole = Role.valueOf(dealerRoleChangeRequestDto.getRole().toUpperCase());
-		} catch (IllegalArgumentException e) {
-			// Role enum에 없는 값이 들어왔을 때
-			throw new DealerException(DealerErrorCode.INVALID_ROLE);
-		}
+		Role newRole = dealerRoleChangeRequestDto.getRole();
 
 		// 딜러에게 허용된 Role인지 검증: DEALER 또는 APPLICANT만 허용
 		if (newRole != Role.DEALER && newRole != Role.APPLICANT) {
@@ -129,7 +119,26 @@ public class DealerService {
 
 		// 역할 변경
 		dealer.updateRole(newRole);
-		// JPA 영속성 컨텍스트가 관리 중이므로 커밋 시 자동 저장됩니다.
+
+	}
+
+	@Transactional
+	public void updatedBranchChangeDealer(
+		CustomUserDetails customUserDetails,
+		DealerBranchChangeRequestDto dealerBranchChangeRequestDto
+	) {
+		Master master = verifyActiveMaster(customUserDetails.getEmail());
+
+		Dealer dealer = verifyActiveDealer(dealerBranchChangeRequestDto.getDealerEmail());
+
+		// Dealer가 실제로 이 Master 소속인지 확인
+		if (!dealer.getMaster().getId().equals(master.getId())) {
+			throw new DealerException(DealerErrorCode.DEALER_NOT_BELONG_TO_MASTER);
+		}
+
+		Branch newBranch = dealerBranchChangeRequestDto.getBranch();
+
+		dealer.updateBranch(newBranch);
 	}
 
 	private Dealer verifyDealeer(Long dealerId) {
