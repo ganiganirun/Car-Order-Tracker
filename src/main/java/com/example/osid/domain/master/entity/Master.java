@@ -1,5 +1,7 @@
 package com.example.osid.domain.master.entity;
 
+import java.time.LocalDateTime;
+
 import com.example.osid.common.entity.BaseEntity;
 import com.example.osid.common.entity.enums.Role;
 import com.example.osid.domain.master.dto.request.MasterUpdatedRequestDto;
@@ -54,6 +56,12 @@ public class Master extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private Role role = Role.MASTER; //역할
 
+	@Column(nullable = false)
+	private boolean isDeleted = false;
+
+	// null 허용: 삭제 전에는 null
+	private LocalDateTime deletedAt;
+
 	public Master(
 		String businessNumber,
 		String name,
@@ -83,4 +91,11 @@ public class Master extends BaseEntity {
 			this.address = masterUpdatedRequestDto.getAddress();
 		}
 	}
+
+	// 소프트 딜리트: isDeleted = true, deletedAt = 현재 시각
+	public void softDeletedMaster() {
+		this.isDeleted = true;
+		this.deletedAt = LocalDateTime.now();
+	}
+
 }

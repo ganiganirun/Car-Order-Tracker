@@ -1,11 +1,19 @@
 package com.example.osid.domain.master.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.osid.common.auth.CustomUserDetails;
+import com.example.osid.domain.dealer.dto.response.DealerInfoResponseDto;
+import com.example.osid.domain.dealer.entity.Dealer;
 import com.example.osid.domain.dealer.repository.DealerRepository;
+import com.example.osid.domain.master.dto.request.MasterDeletedRequestDto;
 import com.example.osid.domain.master.dto.request.MasterSignUpRequestDto;
 import com.example.osid.domain.master.dto.request.MasterUpdatedRequestDto;
+import com.example.osid.domain.master.dto.response.FindByAllMasterResponseDto;
 import com.example.osid.domain.master.dto.response.FindByMasterResponseDto;
 import com.example.osid.domain.master.entity.Master;
 import com.example.osid.domain.master.exception.MasterErrorCode;
@@ -23,6 +31,7 @@ public class MasterService {
 	private final MasterRepository masterRepository;
 	private final UserRepository userRepository;
 	private final DealerRepository dealerRepository;
+	private final PasswordEncoder passwordEncoder;
 
 	public void signUpMaster(MasterSignUpRequestDto masterSignUpRequestDto) {
 		if (userRepository.findByEmail(masterSignUpRequestDto.getEmail()).isPresent()) {
@@ -35,12 +44,15 @@ public class MasterService {
 		if (masterRepository.findByEmail(masterSignUpRequestDto.getEmail()).isPresent()) {
 			throw new MasterException(MasterErrorCode.EMAIL_ALREADY_EXISTS);
 		}
+
+		String encodedPassword = passwordEncoder.encode(masterSignUpRequestDto.getPassword());
+
 		Master master = new Master(
 			masterSignUpRequestDto.getBusinessNumber(),
 			masterSignUpRequestDto.getName(),
 			masterSignUpRequestDto.getPhoneNumber(),
 			masterSignUpRequestDto.getEmail(),
-			masterSignUpRequestDto.getPassword(),
+			encodedPassword,
 			masterSignUpRequestDto.getAddress(),
 			masterSignUpRequestDto.getLicense()
 		);
@@ -49,14 +61,32 @@ public class MasterService {
 	}
 
 	public FindByMasterResponseDto findByMaster(CustomUserDetails customUserDetails) {
+
 		Master master = verifyMaster(customUserDetails.getId());
+
+		List<Dealer> dealers = dealerRepository.findByMasterAndIsDeletedFalse(master);
+
+		List<DealerInfoResponseDto> dealerList = new ArrayList<>();
+
+		for (Dealer dealer : dealers) {
+			DealerInfoResponseDto dealerDto = new DealerInfoResponseDto(
+				dealer.getId(),
+				dealer.getEmail(),
+				dealer.getName(),
+				dealer.getPhoneNumber(),
+				dealer.getPoint()
+			);
+			dealerList.add(dealerDto);
+		}
+
 		return new FindByMasterResponseDto(
 			master.getId(),
 			master.getBusinessNumber(),
 			master.getName(),
 			master.getPhoneNumber(),
 			master.getEmail(),
-			master.getAddress()
+			master.getAddress(),
+			dealerList
 		);
 	}
 
@@ -65,12 +95,60 @@ public class MasterService {
 		CustomUserDetails customUserDetails,
 		MasterUpdatedRequestDto masterUpdatedRequestDto
 	) {
-		Master master = verifyMaster(customUserDetails.getId());
+		Master master = verifyActiveMaster(customUserDetails.getEmail());
 		master.UpdatedMaster(masterUpdatedRequestDto);
+	}
+
+	@Transactional
+	public void deletedMaster(
+		CustomUserDetails customUserDetails,
+		MasterDeletedRequestDto masterDeletedRequestDto
+	) {
+		Master master = verifyActiveMaster(customUserDetails.getEmail());
+
+		String rawPassword = masterDeletedRequestDto.getPassword();
+		String storedHash = master.getPassword();
+
+		if (!passwordEncoder.matches(rawPassword, storedHash)) {
+			// 비밀번호가 불일치하면 예외 던짐
+			throw new MasterException(MasterErrorCode.MASTER_INVALID_PASSWORD);
+		}
+
+		master.softDeletedMaster();
+	}
+
+	public List<FindByAllMasterResponseDto> findByAllMaster(CustomUserDetails customUserDetails) {
+
+		Master me = verifyActiveMaster(customUserDetails.getEmail());
+
+		// 2) 같은 사업자 번호를 가진 활성 마스터들 조회
+		List<Master> masters = masterRepository
+			.findByBusinessNumberAndIsDeletedFalse(me.getBusinessNumber());
+
+		// 3) List<Master> → List<FindByAllMasterResponseDto>로 변환
+		List<FindByAllMasterResponseDto> masterList = new ArrayList<>();
+		for (Master master : masters) {
+			masterList.add(new FindByAllMasterResponseDto(
+				master.getId(),
+				master.getBusinessNumber(),
+				master.getName(),
+				master.getPhoneNumber(),
+				master.getEmail(),
+				master.getAddress()
+			));
+		}
+
+		return masterList;
 	}
 
 	private Master verifyMaster(Long masterId) {
 		return masterRepository.findById(masterId)
 			.orElseThrow(() -> new MasterException(MasterErrorCode.MASTER_NOT_FOUND));
 	}
+
+	private Master verifyActiveMaster(String email) {
+		return masterRepository.findByEmailAndIsDeletedFalse(email)
+			.orElseThrow(() -> new MasterException(MasterErrorCode.MASTER_NOT_FOUND));
+	}
+
 }

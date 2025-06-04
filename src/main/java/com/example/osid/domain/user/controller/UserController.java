@@ -2,6 +2,7 @@ package com.example.osid.domain.user.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.osid.common.auth.CustomUserDetails;
 import com.example.osid.common.response.CommonResponse;
+import com.example.osid.domain.user.dto.request.UserDeletedRequestDto;
 import com.example.osid.domain.user.dto.request.UserSignUpRequestDto;
 import com.example.osid.domain.user.dto.request.UserUpdatedRequestDto;
 import com.example.osid.domain.user.dto.response.FindbyUserResponseDto;
@@ -50,4 +52,12 @@ public class UserController {
 		return CommonResponse.ok();
 	}
 
+	@DeleteMapping("/me")
+	public CommonResponse<Void> deletedUser(
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@Valid @RequestBody UserDeletedRequestDto userDeletedRequestDto
+	) {
+		userService.deletedUser(customUserDetails, userDeletedRequestDto);
+		return CommonResponse.ok();
+	}
 }
