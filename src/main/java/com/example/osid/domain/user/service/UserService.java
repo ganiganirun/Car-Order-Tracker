@@ -4,6 +4,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.osid.common.auth.CustomUserDetails;
+import com.example.osid.common.auth.EmailValidator;
 import com.example.osid.domain.dealer.repository.DealerRepository;
 import com.example.osid.domain.master.repository.MasterRepository;
 import com.example.osid.domain.user.dto.request.UserDeletedRequestDto;
@@ -26,19 +27,12 @@ public class UserService {
 	private final DealerRepository dealerRepository;
 	private final MasterRepository masterRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final EmailValidator emailValidator;
 
 	public void signUpUser(UserSignUpRequestDto userSignUpRequestDto) {
 
-		if (userRepository.findByEmail(userSignUpRequestDto.getEmail()).isPresent()) {
-			throw new UserException(UserErrorCode.EMAIL_ALREADY_EXISTS);
-		}
-		if (dealerRepository.findByEmail(userSignUpRequestDto.getEmail()).isPresent()) {
-			throw new UserException(UserErrorCode.EMAIL_ALREADY_EXISTS);
-		}
-
-		if (masterRepository.findByEmail(userSignUpRequestDto.getEmail()).isPresent()) {
-			throw new UserException(UserErrorCode.EMAIL_ALREADY_EXISTS);
-		}
+		// 공통된 이메일이 있는지 확인 ( Master, Dealer, User )
+		emailValidator.validateDuplicateEmail(userSignUpRequestDto.getEmail());
 
 		String encodedPassword = passwordEncoder.encode(userSignUpRequestDto.getPassword());
 
@@ -73,7 +67,7 @@ public class UserService {
 		UserUpdatedRequestDto userUpdatedRequestDto
 	) {
 		User user = verifyUser(customUserDetails.getId());
-		user.UpdatedUser(userUpdatedRequestDto);
+		user.updatedUser(userUpdatedRequestDto);
 	}
 
 	@Transactional

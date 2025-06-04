@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.osid.common.auth.CustomUserDetails;
 import com.example.osid.common.response.CommonResponse;
+import com.example.osid.domain.dealer.dto.request.DealerBranchChangeRequestDto;
 import com.example.osid.domain.dealer.dto.request.DealerDeletedRequestDto;
 import com.example.osid.domain.dealer.dto.request.DealerRoleChangeRequestDto;
 import com.example.osid.domain.dealer.dto.request.DealerSignUpRequestDto;
@@ -69,6 +70,15 @@ public class DealerController {
 		@Valid @RequestBody DealerRoleChangeRequestDto dealerRoleChangeRequestDto
 	) {
 		dealerService.updatedRoleChangeDealer(customUserDetails, dealerRoleChangeRequestDto);
+		return CommonResponse.ok();
+	}
+
+	@PatchMapping("/branch")
+	public CommonResponse<Void> updatedBranchChange(
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@Valid @RequestBody DealerBranchChangeRequestDto dealerBranchChangeRequestDto
+	) {
+		dealerService.updatedBranchChangeDealer(customUserDetails, dealerBranchChangeRequestDto);
 		return CommonResponse.ok();
 	}
 }

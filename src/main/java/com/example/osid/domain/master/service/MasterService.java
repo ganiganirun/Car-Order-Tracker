@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.osid.common.auth.CustomUserDetails;
+import com.example.osid.common.auth.EmailValidator;
 import com.example.osid.domain.dealer.dto.response.DealerInfoResponseDto;
 import com.example.osid.domain.dealer.entity.Dealer;
 import com.example.osid.domain.dealer.repository.DealerRepository;
@@ -32,18 +33,12 @@ public class MasterService {
 	private final UserRepository userRepository;
 	private final DealerRepository dealerRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final EmailValidator emailValidator;
 
 	public void signUpMaster(MasterSignUpRequestDto masterSignUpRequestDto) {
-		if (userRepository.findByEmail(masterSignUpRequestDto.getEmail()).isPresent()) {
-			throw new MasterException(MasterErrorCode.EMAIL_ALREADY_EXISTS);
-		}
-		if (dealerRepository.findByEmail(masterSignUpRequestDto.getEmail()).isPresent()) {
-			throw new MasterException(MasterErrorCode.EMAIL_ALREADY_EXISTS);
-		}
 
-		if (masterRepository.findByEmail(masterSignUpRequestDto.getEmail()).isPresent()) {
-			throw new MasterException(MasterErrorCode.EMAIL_ALREADY_EXISTS);
-		}
+		// 공통된 이메일이 있는지 확인 ( Master, Dealer, User )
+		emailValidator.validateDuplicateEmail(masterSignUpRequestDto.getEmail());
 
 		String encodedPassword = passwordEncoder.encode(masterSignUpRequestDto.getPassword());
 
@@ -74,7 +69,7 @@ public class MasterService {
 				dealer.getEmail(),
 				dealer.getName(),
 				dealer.getPhoneNumber(),
-				dealer.getPoint()
+				dealer.getBranch()
 			);
 			dealerList.add(dealerDto);
 		}
@@ -96,7 +91,7 @@ public class MasterService {
 		MasterUpdatedRequestDto masterUpdatedRequestDto
 	) {
 		Master master = verifyActiveMaster(customUserDetails.getEmail());
-		master.UpdatedMaster(masterUpdatedRequestDto);
+		master.updatedMaster(masterUpdatedRequestDto);
 	}
 
 	@Transactional

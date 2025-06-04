@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import com.example.osid.common.entity.BaseEntity;
 import com.example.osid.common.entity.enums.Role;
 import com.example.osid.domain.dealer.dto.request.DealerUpdatedRequestDto;
+import com.example.osid.domain.dealer.enums.Branch;
 import com.example.osid.domain.master.entity.Master;
 
 import jakarta.persistence.Column;
@@ -44,7 +45,9 @@ public class Dealer extends BaseEntity {
 	@Column(nullable = false)
 	private String name; //이름
 
-	private String point = "미배정"; //지점
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
+	private Branch branch = Branch.미배정; //지점
 
 	@Column(nullable = false)
 	private String phoneNumber; //전화번호
@@ -77,7 +80,7 @@ public class Dealer extends BaseEntity {
 		this.master = master;
 	}
 
-	public void UpdatedDealer(DealerUpdatedRequestDto dealerUpdatedRequestDto) {
+	public void updatedDealer(DealerUpdatedRequestDto dealerUpdatedRequestDto) {
 		if (dealerUpdatedRequestDto.getName() != null) {
 			this.name = dealerUpdatedRequestDto.getName();
 		}
@@ -94,5 +97,9 @@ public class Dealer extends BaseEntity {
 
 	public void updateRole(Role newRole) {
 		this.role = newRole;
+	}
+
+	public void updateBranch(Branch newBranch) {
+		this.branch = newBranch;
 	}
 }
