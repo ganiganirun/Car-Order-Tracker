@@ -16,7 +16,8 @@ public enum ErrorCode implements BaseCode {
 	INVALID_TYPE_VALUE(HttpStatus.BAD_REQUEST, "C005", "유효하지 않은 타입의 값입니다."),
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "C006", "사용자가 없습니다."),
 	INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "C007", "유효하지 않는 토큰입니다."),
-	FORBIDDEN(HttpStatus.FORBIDDEN, "C008", "접근 권한이 없습니다.");
+	FORBIDDEN(HttpStatus.FORBIDDEN, "C008", "접근 권한이 없습니다."),
+	AUTHORITY_NOT_FOUND(HttpStatus.FORBIDDEN, "C009", "권한 정보가 없습니다.");
 
 	private final HttpStatus httpStatus;
 	private final String code;
