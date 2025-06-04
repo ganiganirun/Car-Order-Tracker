@@ -5,18 +5,36 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class PaymentRequestDto {
 
-	private String impUid;         // 아임포트 결제 고유 번호
+	@Getter
+	@Setter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class Paid {
 
-	private String merchantUid;    // 주문 고유 번호 (Order.merchantUid)
+		private String impUid; // 아임포트 결제 고유 번호
 
-	private Long amount; // 결제 금액
+		private String merchantUid; // 주문 고유 번호 (Order.merchantUid)
 
-	private Long userId;
+		private Long amount; // 결제 금액
+
+		private Long userId;
+
+	}
+
+	@Getter
+	@Setter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class Cancel {
+
+		private String impUid; // 아임포트 결제 고유 번호
+
+		private String merchantUid; // 주문 고유 번호 (Order.merchantUid)
+
+		private int refundAmount; // 결제 금액
+
+	}
 
 }
