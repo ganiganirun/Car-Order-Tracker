@@ -245,8 +245,12 @@ public class OrderService {
 		Page<Orders> orders = orderSearch.findOrderAll(role, pageable, customUserDetails.getId());
 
 		return orders.map(
-			order -> new OrderResponseDto.FindAll(order.getId(), order.getUser().getName(), order.getDealer().getName(),
-				order.getModel().getName()));
+			order -> new OrderResponseDto.FindAll(
+				order.getId(),
+				order.getUser().getName(),
+				order.getDealer().getName(),
+				order.getModel().getName())
+		);
 	}
 
 	// 주문 삭제
