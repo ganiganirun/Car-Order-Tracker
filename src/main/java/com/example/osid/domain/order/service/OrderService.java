@@ -327,6 +327,7 @@ public class OrderService {
 		return orders;
 	}
 
+	// List<Option> -> List<String>
 	private List<String> changeOptions(Orders orders) {
 
 		return orders.getOrderOptions().stream()
