@@ -14,8 +14,12 @@ import com.example.osid.common.entity.enums.Role;
 import com.example.osid.common.exception.CustomException;
 import com.example.osid.common.exception.ErrorCode;
 import com.example.osid.domain.dealer.entity.Dealer;
+import com.example.osid.domain.dealer.exception.DealerErrorCode;
+import com.example.osid.domain.dealer.exception.DealerException;
 import com.example.osid.domain.dealer.repository.DealerRepository;
 import com.example.osid.domain.model.entity.Model;
+import com.example.osid.domain.model.exception.ModelErrorCode;
+import com.example.osid.domain.model.exception.ModelException;
 import com.example.osid.domain.model.repository.ModelRepository;
 import com.example.osid.domain.option.entity.Option;
 import com.example.osid.domain.option.repository.OptionRepository;
@@ -24,9 +28,13 @@ import com.example.osid.domain.order.dto.response.OrderResponseDto;
 import com.example.osid.domain.order.entity.OrderOption;
 import com.example.osid.domain.order.entity.Orders;
 import com.example.osid.domain.order.enums.OrderStatus;
+import com.example.osid.domain.order.exception.OrderErrorCode;
+import com.example.osid.domain.order.exception.OrderException;
 import com.example.osid.domain.order.repository.OrderRepository;
 import com.example.osid.domain.order.repository.OrderSearch;
 import com.example.osid.domain.user.entity.User;
+import com.example.osid.domain.user.exception.UserErrorCode;
+import com.example.osid.domain.user.exception.UserException;
 import com.example.osid.domain.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -59,14 +67,15 @@ public class OrderService {
 		 * order 객체 저장
 		 * */
 
+		// 예외처리 refactor
 		Dealer dealer = dealerRepository.findById(customUserDetails.getId())
-			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
+			.orElseThrow(() -> new DealerException(DealerErrorCode.DEALER_NOT_FOUND));
 
 		User user = userRepository.findByEmail(requestDto.getUserEmail())
-			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
+			.orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
 		Model model = modelRepository.findById(requestDto.getModelId())
-			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
+			.orElseThrow(() -> new ModelException(ModelErrorCode.MODEL_NOT_FOUND));
 
 		List<Option> options = optionRepository.findByIdIn(requestDto.getOption());
 
@@ -117,8 +126,8 @@ public class OrderService {
 	public OrderResponseDto.Update updateOrder(CustomUserDetails customUserDetails, Long orderId,
 		OrderRequestDto.Update requestDto) {
 
-		Orders orders = orderRepository.findById(orderId)
-			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
+		// 예외처리 refactor
+		Orders orders = extractOrder(orderId);
 
 		// 검증
 		validateOrderOwner(orders, customUserDetails, extractRole(customUserDetails));
@@ -167,8 +176,8 @@ public class OrderService {
 
 	public Object findOrder(CustomUserDetails customUserDetails, Long orderId) {
 
-		Orders orders = orderRepository.findById(orderId)
-			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
+		// 예외처리 refactor
+		Orders orders = extractOrder(orderId);
 
 		// List<Option> -> List<String>
 		List<String> optionNames = changeOptions(orders);
@@ -256,8 +265,8 @@ public class OrderService {
 	// 주문 삭제
 	public void deleteOrder(CustomUserDetails customUserDetails, Long orderId) {
 
-		Orders orders = orderRepository.findById(orderId)
-			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
+		// 예외처리 refactor
+		Orders orders = extractOrder(orderId);
 
 		// 검증
 		validateOrderOwner(orders, customUserDetails, extractRole(customUserDetails));
@@ -271,10 +280,11 @@ public class OrderService {
 
 		Collection<? extends GrantedAuthority> grantedAuthorities = customUserDetails.getAuthorities();
 
+		// 예외처리 refactor
 		String authorityString = grantedAuthorities.stream()
 			.findFirst()
 			.map(GrantedAuthority::getAuthority)
-			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
+			.orElseThrow(() -> new CustomException(ErrorCode.AUTHORITY_NOT_FOUND));
 
 		Role role = Role.valueOf(authorityString.replace("ROLE_", ""));
 
@@ -285,16 +295,17 @@ public class OrderService {
 	private void validateOrderOwner(Orders orders, CustomUserDetails userDetails, Role role) {
 		Long userId = userDetails.getId();
 
+		// 예외처리 refactor
 		switch (role) {
 			case USER -> {
 				if (!orders.getUser().getId().equals(userId)) {
-					throw new CustomException(ErrorCode.FORBIDDEN);
+					throw new OrderException(OrderErrorCode.ORDER_ACCESS_DENIED);
 				}
 			}
 
 			case DEALER -> {
 				if (!orders.getDealer().getId().equals(userId)) {
-					throw new CustomException(ErrorCode.FORBIDDEN);
+					throw new OrderException(OrderErrorCode.ORDER_ACCESS_DENIED);
 				}
 			}
 
@@ -307,6 +318,15 @@ public class OrderService {
 		}
 	}
 
+	// 예외처리 및 order 객체 반환 메소드화(Refactor)
+	private Orders extractOrder(Long orderId) {
+
+		Orders orders = orderRepository.findById(orderId)
+			.orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
+
+		return orders;
+	}
+
 	private List<String> changeOptions(Orders orders) {
 
 		return orders.getOrderOptions().stream()
@@ -317,3 +337,4 @@ public class OrderService {
 	}
 
 }
+
