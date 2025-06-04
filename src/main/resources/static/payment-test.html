@@ -74,7 +74,7 @@
             if (rsp.success) {
                 // 결제 성공 시, 결제 확인 API 호출
                 $.ajax({
-                    url: `/api/v1/order/payment/${rsp.imp_uid}`,
+                    url: `/api/payment/${rsp.imp_uid}`,
                     type: 'POST',
                     contentType: 'application/json',
                     headers: {'Authorization': 'Bearer ' + token},
