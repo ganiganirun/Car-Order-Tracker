@@ -59,8 +59,7 @@ public class Payments extends BaseEntity {
 		this.paidAt = paidAt;
 	}
 
-	public void changePaymentBySuccess(PaymentStatus paymentStatus, String impUid) {
+	public void changePaymentBySuccess(PaymentStatus paymentStatus) {
 		this.paymentStatus = paymentStatus;
-		this.impUid = impUid;
 	}
 }
