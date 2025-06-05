@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.osid.domain.model.dto.ModelCreateRequest;
+import com.example.osid.domain.model.dto.ModelMasterResponse;
 import com.example.osid.domain.model.dto.ModelResponse;
 import com.example.osid.domain.model.dto.ModelUpdateRequest;
 import com.example.osid.domain.model.entity.Model;
@@ -47,6 +48,7 @@ public class ModelServiceImpl implements ModelService {
 	@Override
 	@Transactional(readOnly = true)
 	public Page<ModelResponse> findAllModel(Pageable pageable) {
+
 		Page<Model> modelList = modelRepository.findAllByDeletedAtIsNull(pageable);
 		return modelList.map(ModelResponse::from);
 	}
@@ -72,9 +74,30 @@ public class ModelServiceImpl implements ModelService {
 		model.setDeletedAt();
 	}
 
+	//master 전용 모델 단건 조회
+	@Override
+	@Transactional(readOnly = true)
+	@PreAuthorize("hasRole('MASTER')")
+	public ModelMasterResponse findModelForMaster(Long modelId) {
+		Model model = modelRepository.findById(modelId)
+			.orElseThrow(() -> new ModelException(ModelErrorCode.MODEL_NOT_FOUND));
+		return ModelMasterResponse.from(model);
+	}
+
+	//master 전용 모델 전체 조회
+	@Override
+	@Transactional(readOnly = true)
+	@PreAuthorize("hasRole('MASTER')")
+	public Page<ModelMasterResponse> findAllModelForMaster(Pageable pageable, String deletedFilter) {
+
+		Page<Model> modelList = modelRepository.findAllModel(pageable, deletedFilter);
+		return modelList.map(ModelMasterResponse::from);
+	}
+
 	//삭제되지 않은 모델만 조회
 	private Model findActiveModel(Long modelId) {
 		return modelRepository.findByIdAndDeletedAtIsNull(modelId)
 			.orElseThrow(() -> new ModelException(ModelErrorCode.MODEL_NOT_FOUND));
 	}
+
 }

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import com.example.osid.domain.model.entity.Model;
 
 @Repository
-public interface ModelRepository extends JpaRepository<Model, Long> {
+public interface ModelRepository extends JpaRepository<Model, Long>, ModelSearch {
 
 	Page<Model> findAllByDeletedAtIsNull(Pageable pageable);
 
