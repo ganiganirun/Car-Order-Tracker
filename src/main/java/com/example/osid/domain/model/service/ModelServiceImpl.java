@@ -2,6 +2,7 @@ package com.example.osid.domain.model.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ public class ModelServiceImpl implements ModelService {
 	//모델 생성
 	@Override
 	@Transactional
+	@PreAuthorize("hasRole('MASTER')")
 	public void createModel(ModelCreateRequest request) {
 		Model model = new Model(request.getName(), request.getColor(), request.getDescription(), request.getImage(),
 			request.getCategory(),
@@ -33,6 +35,7 @@ public class ModelServiceImpl implements ModelService {
 	}
 
 	//모델 단건 조회
+	@Override
 	@Transactional(readOnly = true)
 	public ModelResponse findModel(Long modelId) {
 
@@ -41,6 +44,7 @@ public class ModelServiceImpl implements ModelService {
 	}
 
 	//모델 전체 조회
+	@Override
 	@Transactional(readOnly = true)
 	public Page<ModelResponse> findAllModel(Pageable pageable) {
 		Page<Model> modelList = modelRepository.findAllByDeletedAtIsNull(pageable);
@@ -48,7 +52,9 @@ public class ModelServiceImpl implements ModelService {
 	}
 
 	//모델 수정
+	@Override
 	@Transactional
+	@PreAuthorize("hasRole('MASTER')")
 	public ModelResponse updateModel(Long modelId, ModelUpdateRequest request) {
 
 		Model model = findActiveModel(modelId);
@@ -58,7 +64,9 @@ public class ModelServiceImpl implements ModelService {
 	}
 
 	//모델 삭제 조회
+	@Override
 	@Transactional
+	@PreAuthorize("hasRole('MASTER')")
 	public void deleteModel(Long modelId) {
 		Model model = findActiveModel(modelId);
 		model.setDeletedAt();
