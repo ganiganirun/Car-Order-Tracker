@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 import com.example.osid.domain.option.entity.Option;
 
 @Repository
-public interface OptionRepository extends JpaRepository<Option, Long> {
+public interface OptionRepository extends JpaRepository<Option, Long>, OptionSearch {
 
 	// option list 반환
 	List<Option> findByIdIn(List<Long> ids);

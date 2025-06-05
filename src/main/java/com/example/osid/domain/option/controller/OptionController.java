@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.osid.common.response.CommonResponse;
+import com.example.osid.domain.option.dto.OptionMasterResponse;
 import com.example.osid.domain.option.dto.OptionRequest;
 import com.example.osid.domain.option.dto.OptionResponse;
 import com.example.osid.domain.option.dto.OptionUpdateRequest;
@@ -76,4 +78,22 @@ public class OptionController {
 		return CommonResponse.ok();
 	}
 
+	// master 전용 옵션 단건 조회
+	@GetMapping("/master/{optionId}")
+	@ResponseStatus(HttpStatus.OK)
+	public CommonResponse<OptionMasterResponse> findOptionForMaster(@PathVariable Long optionId) {
+
+		return CommonResponse.ok(optionService.findModelForMaster(optionId));
+	}
+
+	// master 전용 옵션 전체 조회
+	@GetMapping("/master")
+	@ResponseStatus(HttpStatus.OK)
+	public CommonResponse<Page<OptionMasterResponse>> findAllOptionForMaster(
+		@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+		@RequestParam(required = false, defaultValue = "all", name = "deleted") String deletedFilter
+	) {
+
+		return CommonResponse.ok(optionService.findAllModelForMaster(pageable, deletedFilter));
+	}
 }
