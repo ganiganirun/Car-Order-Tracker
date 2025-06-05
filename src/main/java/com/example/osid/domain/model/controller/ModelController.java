@@ -1,6 +1,9 @@
 package com.example.osid.domain.model.controller;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.osid.common.response.CommonResponse;
 import com.example.osid.domain.model.dto.ModelCreateRequest;
+import com.example.osid.domain.model.dto.ModelMasterResponse;
 import com.example.osid.domain.model.dto.ModelResponse;
 import com.example.osid.domain.model.dto.ModelUpdateRequest;
 import com.example.osid.domain.model.service.ModelServiceImpl;
@@ -52,11 +56,10 @@ public class ModelController {
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
 	public CommonResponse<Page<ModelResponse>> findAllModel(
-		@RequestParam(defaultValue = "1") int page,
-		@RequestParam(defaultValue = "10") int size
+		@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
 	) {
 
-		return CommonResponse.ok(modelService.findAllModel(page, size));
+		return CommonResponse.ok(modelService.findAllModel(pageable));
 	}
 
 	//모델 수정
@@ -74,4 +77,24 @@ public class ModelController {
 		modelService.deleteModel(modelId);
 		return CommonResponse.ok();
 	}
+
+	// master 전용 모델 단건 조회
+	@GetMapping("/master/{modelId}")
+	@ResponseStatus(HttpStatus.OK)
+	public CommonResponse<ModelMasterResponse> findModelForMaster(@PathVariable Long modelId) {
+
+		return CommonResponse.ok(modelService.findModelForMaster(modelId));
+	}
+
+	// master 전용 모델 전체 조회
+	@GetMapping("/master")
+	@ResponseStatus(HttpStatus.OK)
+	public CommonResponse<Page<ModelMasterResponse>> findAllModelForMaster(
+		@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+		@RequestParam(required = false, defaultValue = "all", name = "deleted") String deletedFilter
+	) {
+
+		return CommonResponse.ok(modelService.findAllModelForMaster(pageable, deletedFilter));
+	}
+
 }
