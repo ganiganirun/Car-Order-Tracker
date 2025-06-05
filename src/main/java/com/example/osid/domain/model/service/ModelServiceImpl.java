@@ -1,12 +1,13 @@
 package com.example.osid.domain.model.service;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.osid.domain.model.dto.ModelCreateRequest;
+import com.example.osid.domain.model.dto.ModelMasterResponse;
 import com.example.osid.domain.model.dto.ModelResponse;
 import com.example.osid.domain.model.dto.ModelUpdateRequest;
 import com.example.osid.domain.model.entity.Model;
@@ -25,6 +26,7 @@ public class ModelServiceImpl implements ModelService {
 	//모델 생성
 	@Override
 	@Transactional
+	@PreAuthorize("hasRole('MASTER')")
 	public void createModel(ModelCreateRequest request) {
 		Model model = new Model(request.getName(), request.getColor(), request.getDescription(), request.getImage(),
 			request.getCategory(),
@@ -34,6 +36,7 @@ public class ModelServiceImpl implements ModelService {
 	}
 
 	//모델 단건 조회
+	@Override
 	@Transactional(readOnly = true)
 	public ModelResponse findModel(Long modelId) {
 
@@ -42,15 +45,18 @@ public class ModelServiceImpl implements ModelService {
 	}
 
 	//모델 전체 조회
+	@Override
 	@Transactional(readOnly = true)
-	public Page<ModelResponse> findAllModel(int page, int size) {
-		Pageable pageable = PageRequest.of(page - 1, size);
+	public Page<ModelResponse> findAllModel(Pageable pageable) {
+
 		Page<Model> modelList = modelRepository.findAllByDeletedAtIsNull(pageable);
 		return modelList.map(ModelResponse::from);
 	}
 
 	//모델 수정
+	@Override
 	@Transactional
+	@PreAuthorize("hasRole('MASTER')")
 	public ModelResponse updateModel(Long modelId, ModelUpdateRequest request) {
 
 		Model model = findActiveModel(modelId);
@@ -60,10 +66,32 @@ public class ModelServiceImpl implements ModelService {
 	}
 
 	//모델 삭제 조회
+	@Override
 	@Transactional
+	@PreAuthorize("hasRole('MASTER')")
 	public void deleteModel(Long modelId) {
 		Model model = findActiveModel(modelId);
 		model.setDeletedAt();
+	}
+
+	//master 전용 모델 단건 조회
+	@Override
+	@Transactional(readOnly = true)
+	@PreAuthorize("hasRole('MASTER')")
+	public ModelMasterResponse findModelForMaster(Long modelId) {
+		Model model = modelRepository.findById(modelId)
+			.orElseThrow(() -> new ModelException(ModelErrorCode.MODEL_NOT_FOUND));
+		return ModelMasterResponse.from(model);
+	}
+
+	//master 전용 모델 전체 조회
+	@Override
+	@Transactional(readOnly = true)
+	@PreAuthorize("hasRole('MASTER')")
+	public Page<ModelMasterResponse> findAllModelForMaster(Pageable pageable, String deletedFilter) {
+
+		Page<Model> modelList = modelRepository.findAllModel(pageable, deletedFilter);
+		return modelList.map(ModelMasterResponse::from);
 	}
 
 	//삭제되지 않은 모델만 조회
@@ -71,4 +99,5 @@ public class ModelServiceImpl implements ModelService {
 		return modelRepository.findByIdAndDeletedAtIsNull(modelId)
 			.orElseThrow(() -> new ModelException(ModelErrorCode.MODEL_NOT_FOUND));
 	}
+
 }
