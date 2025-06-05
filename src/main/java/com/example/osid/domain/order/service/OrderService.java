@@ -17,6 +17,10 @@ import com.example.osid.domain.dealer.entity.Dealer;
 import com.example.osid.domain.dealer.exception.DealerErrorCode;
 import com.example.osid.domain.dealer.exception.DealerException;
 import com.example.osid.domain.dealer.repository.DealerRepository;
+import com.example.osid.domain.master.entity.Master;
+import com.example.osid.domain.master.exception.MasterErrorCode;
+import com.example.osid.domain.master.exception.MasterException;
+import com.example.osid.domain.master.repository.MasterRepository;
 import com.example.osid.domain.model.entity.Model;
 import com.example.osid.domain.model.exception.ModelErrorCode;
 import com.example.osid.domain.model.exception.ModelException;
@@ -51,6 +55,7 @@ public class OrderService {
 	private final UserRepository userRepository;
 	private final DealerRepository dealerRepository;
 	private final OrderSearch orderSearch;
+	private final MasterRepository masterRepository;
 
 	// 주문 생성
 	public OrderResponseDto.Add createOrder(CustomUserDetails customUserDetails, OrderRequestDto.Add requestDto) {
@@ -246,20 +251,44 @@ public class OrderService {
 	}
 
 	// 주문 전체 조회
-	public Page<OrderResponseDto.FindAll> findAllOrder(CustomUserDetails customUserDetails, Pageable pageable) {
+	public Page<OrderResponseDto.FindAll> findAllOrder(
+		CustomUserDetails customUserDetails, Pageable pageable) {
 
 		// role 값 가져오기
 		Role role = extractRole(customUserDetails);
 
-		Page<Orders> orders = orderSearch.findOrderAll(role, pageable, customUserDetails.getId());
+		if (role.equals(Role.MASTER)) {
 
-		return orders.map(
-			order -> new OrderResponseDto.FindAll(
-				order.getId(),
-				order.getUser().getName(),
-				order.getDealer().getName(),
-				order.getModel().getName())
-		);
+			// 자기가 관리하는 딜러의 주문건만 조회 가능하도록 수정
+			Master master = masterRepository.findById(customUserDetails.getId())
+				.orElseThrow(() -> new MasterException(MasterErrorCode.MASTER_NOT_FOUND));
+
+			List<Long> dealerIds = dealerRepository.findByMasterAndIsDeletedFalse(master)
+				.stream()
+				.map(dealer -> dealer.getId())
+				.toList();
+
+			return orderSearch.findOrderAllForMaster(role, pageable, dealerIds).map(
+				order -> new OrderResponseDto.FindAll(
+					order.getId(),
+					order.getUser().getName(),
+					order.getDealer().getName(),
+					order.getModel().getName())
+			);
+
+		} else {
+			// 유저 딜러의 전체 주문 조회
+			return orderSearch.findOrderAllForUserOrDealer(
+					role, pageable, customUserDetails.getId())
+				.map(order -> new OrderResponseDto.FindAll(
+					order.getId(),
+					order.getUser().getName(),
+					order.getDealer().getName(),
+					order.getModel().getName())
+				);
+
+		}
+
 	}
 
 	// 주문 삭제
@@ -293,24 +322,26 @@ public class OrderService {
 
 	// 검증
 	private void validateOrderOwner(Orders orders, CustomUserDetails userDetails, Role role) {
-		Long userId = userDetails.getId();
+		Long id = userDetails.getId();
 
 		// 예외처리 refactor
 		switch (role) {
 			case USER -> {
-				if (!orders.getUser().getId().equals(userId)) {
+				if (!orders.getUser().getId().equals(id)) {
 					throw new OrderException(OrderErrorCode.ORDER_ACCESS_DENIED);
 				}
 			}
 
 			case DEALER -> {
-				if (!orders.getDealer().getId().equals(userId)) {
+				if (!orders.getDealer().getId().equals(id)) {
 					throw new OrderException(OrderErrorCode.ORDER_ACCESS_DENIED);
 				}
 			}
 
 			case MASTER -> {
-				// MASTER는 모든 주문에 접근 가능
+				if (!orders.getDealer().getMaster().getId().equals(id)) {
+					throw new OrderException(OrderErrorCode.ORDER_ACCESS_DENIED);
+				}
 			}
 
 			default -> throw new CustomException(ErrorCode.FORBIDDEN);
