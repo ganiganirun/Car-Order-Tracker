@@ -1,6 +1,7 @@
 package com.example.osid.domain.order.entity;
 
 import com.example.osid.domain.option.entity.Option;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -27,10 +28,16 @@ public class OrderOption {
 	private Long id;
 
 	@ManyToOne
+	@JsonBackReference
 	@JoinColumn(name = "order_id")
-	private Order order;
+	private Orders orders;
 
 	@ManyToOne
 	@JoinColumn(name = "option_id")
 	private Option option;
+
+	public OrderOption(Orders orders, Option option) {
+		this.orders = orders;
+		this.option = option;
+	}
 }

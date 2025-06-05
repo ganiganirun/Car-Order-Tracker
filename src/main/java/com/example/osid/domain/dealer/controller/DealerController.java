@@ -2,6 +2,7 @@ package com.example.osid.domain.dealer.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,6 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.osid.common.auth.CustomUserDetails;
 import com.example.osid.common.response.CommonResponse;
+import com.example.osid.domain.dealer.dto.request.DealerBranchChangeRequestDto;
+import com.example.osid.domain.dealer.dto.request.DealerDeletedRequestDto;
+import com.example.osid.domain.dealer.dto.request.DealerRoleChangeRequestDto;
 import com.example.osid.domain.dealer.dto.request.DealerSignUpRequestDto;
 import com.example.osid.domain.dealer.dto.request.DealerUpdatedRequestDto;
 import com.example.osid.domain.dealer.dto.response.FindByDealerResponseDto;
@@ -48,6 +52,33 @@ public class DealerController {
 		@Valid @RequestBody DealerUpdatedRequestDto dealerUpdatedRequestDto
 	) {
 		dealerService.updatedDealer(customUserDetails, dealerUpdatedRequestDto);
+		return CommonResponse.ok();
+	}
+
+	@DeleteMapping("/me")
+	public CommonResponse<Void> deletedDealer(
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@Valid @RequestBody DealerDeletedRequestDto dealerDeletedRequestDto
+	) {
+		dealerService.deletedDealer(customUserDetails, dealerDeletedRequestDto);
+		return CommonResponse.ok();
+	}
+
+	@PatchMapping("/role")
+	public CommonResponse<Void> updatedRoleChange(
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@Valid @RequestBody DealerRoleChangeRequestDto dealerRoleChangeRequestDto
+	) {
+		dealerService.updatedRoleChangeDealer(customUserDetails, dealerRoleChangeRequestDto);
+		return CommonResponse.ok();
+	}
+
+	@PatchMapping("/branch")
+	public CommonResponse<Void> updatedBranchChange(
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@Valid @RequestBody DealerBranchChangeRequestDto dealerBranchChangeRequestDto
+	) {
+		dealerService.updatedBranchChangeDealer(customUserDetails, dealerBranchChangeRequestDto);
 		return CommonResponse.ok();
 	}
 }

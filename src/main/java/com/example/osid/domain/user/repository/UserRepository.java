@@ -13,4 +13,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	// email로 유저 검색
 	Optional<User> findByEmail(String email);
 
+	// 삭제되지 않는 User 조회
+	Optional<User> findByEmailAndIsDeletedFalse(String email);
+
 }
