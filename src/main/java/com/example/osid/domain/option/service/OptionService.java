@@ -1,6 +1,7 @@
 package com.example.osid.domain.option.service;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.example.osid.domain.option.dto.OptionRequest;
 import com.example.osid.domain.option.dto.OptionResponse;
@@ -12,7 +13,7 @@ public interface OptionService {
 
 	OptionResponse findOption(Long optionId);
 
-	Page<OptionResponse> findAllOption(int page, int size);
+	Page<OptionResponse> findAllOption(Pageable pageable);
 
 	OptionResponse updateOption(Long optionId, OptionUpdateRequest request);
 
