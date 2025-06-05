@@ -2,6 +2,7 @@ package com.example.osid.domain.option.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ public class OptionServiceImpl implements OptionService {
 
 	@Override
 	@Transactional
+	@PreAuthorize("hasRole('MASTER')")
 	public void createOption(OptionRequest request) {
 		Option option = new Option(request.getName(), request.getDescription(), request.getImage(),
 			request.getCategory(), request.getPrice());
@@ -45,6 +47,7 @@ public class OptionServiceImpl implements OptionService {
 
 	@Override
 	@Transactional
+	@PreAuthorize("hasRole('MASTER')")
 	public OptionResponse updateOption(Long optionId, OptionUpdateRequest request) {
 		Option option = findActiveOption(optionId);
 		option.updateOption(request);
@@ -54,6 +57,7 @@ public class OptionServiceImpl implements OptionService {
 
 	@Override
 	@Transactional
+	@PreAuthorize("hasRole('MASTER')")
 	public void deleteOption(Long optionId) {
 		Option option = findActiveOption(optionId);
 		option.setDeletedAt();
