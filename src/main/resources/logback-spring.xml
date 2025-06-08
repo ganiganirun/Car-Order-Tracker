@@ -1,0 +1,34 @@
+<configuration>
+    <!-- 콘솔 로그 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>[%d{HH:mm:ss.SSS}] [%-5level] %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 파일 로그 -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- ① 실제 로그를 쓸 기본 파일 경로 -->
+        <file>logs/app.log</file>
+
+        <!-- ② 언제, 어떻게 롤링(분리)할지 정의 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- ③ 날짜별로 파일을 분리할 패턴.
+                 예: logs/app-2025-06-07.log, logs/app-2025-06-08.log -->
+            <fileNamePattern>logs/app-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- ④ 보관할 일수. 7일이 지난 로그 파일은 자동 삭제 -->
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <!-- ⑤ 파일에 남길 로그 형식. 연-월-일 시:분:초.밀리초 포함 -->
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-5level] %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 루트 로거: 모든 패키지의 로그를 INFO 레벨로 콘솔+파일에 보낸다 -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>
