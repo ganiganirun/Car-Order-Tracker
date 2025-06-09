@@ -39,6 +39,11 @@ public class JwtUtil {
 			.getBody();
 	}
 
+	// id 추출
+	public Long extractId(String token) {
+		return extractAllClaims(token).get("id", Long.class);
+	}
+
 	// 이메일(Subject) 추출
 	public String extractEmail(String token) {
 		return extractAllClaims(token).getSubject();
