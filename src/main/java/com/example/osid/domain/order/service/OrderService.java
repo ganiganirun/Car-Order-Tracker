@@ -141,8 +141,27 @@ public class OrderService {
 		// 추후 다른 방법이 생기면 바뀔 예정
 
 		// 주소 수정
-		if (requestDto.getAddress() != null) {
-			orders.setAddress(requestDto.getAddress());
+		// if (requestDto.getAddress() != null) {
+		// 	orders.setAddress(requestDto.getAddress());
+		// }
+		//
+		// // 주문 상태 수정
+		// if (requestDto.getOrderStatus() != null) {
+		// 	orders.setOrderStatus(requestDto.getOrderStatus());
+		// }
+		//
+		// // 예상 출고일 수정
+		// if (requestDto.getExpectedDeliveryAt() != null) {
+		// 	orders.setExpectedDeliveryAt(requestDto.getExpectedDeliveryAt());
+		// }
+		//
+		// // 실제 출고일 수정
+		// if (requestDto.getActualDeliveryAt() != null) {
+		// 	orders.setActualDeliveryAt(requestDto.getActualDeliveryAt());
+		// }
+
+		if (requestDto.getAddress().isPresent()) {
+			orders.setAddress(requestDto.getAddress().get());
 		}
 
 		// 주문 상태 수정
@@ -151,13 +170,13 @@ public class OrderService {
 		}
 
 		// 예상 출고일 수정
-		if (requestDto.getExpectedDeliveryAt() != null) {
-			orders.setExpectedDeliveryAt(requestDto.getExpectedDeliveryAt());
+		if (requestDto.getExpectedDeliveryAt().isPresent()) {
+			orders.setExpectedDeliveryAt(requestDto.getExpectedDeliveryAt().get());
 		}
 
 		// 실제 출고일 수정
-		if (requestDto.getActualDeliveryAt() != null) {
-			orders.setActualDeliveryAt(requestDto.getActualDeliveryAt());
+		if (requestDto.getActualDeliveryAt().isPresent()) {
+			orders.setActualDeliveryAt(requestDto.getActualDeliveryAt().get());
 		}
 
 		// List<Option> -> List<String>
