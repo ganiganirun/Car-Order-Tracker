@@ -3,7 +3,6 @@ package com.example.osid.domain.mycar.service;
 import java.util.Objects;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +16,6 @@ import com.example.osid.domain.mycar.exception.MyCarlErrorCode;
 import com.example.osid.domain.mycar.repository.MycarRepository;
 import com.example.osid.domain.order.entity.Orders;
 import com.example.osid.domain.order.repository.OrderRepository;
-import com.example.osid.domain.user.entity.User;
-import com.example.osid.domain.user.exception.UserErrorCode;
-import com.example.osid.domain.user.exception.UserException;
 import com.example.osid.domain.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -45,9 +41,7 @@ public class MyCarServiceImpl implements MyCarService {
 	//myCar 전체조회 (mycar 모델명)
 	@Override
 	@Transactional(readOnly = true)
-	public Page<MyCarListResponse> findAllMyCar(CustomUserDetails customUserDetails, int page, int size) {
-
-		Pageable pageable = PageRequest.of(page - 1, size);
+	public Page<MyCarListResponse> findAllMyCar(CustomUserDetails customUserDetails, Pageable pageable) {
 		Long userId = customUserDetails.getId();
 		Page<Mycar> myCarList = mycarRepository.findAllByUserIdAndDeletedAtIsNull(userId, pageable);
 		return myCarList.map(MyCarListResponse::from);
@@ -66,9 +60,10 @@ public class MyCarServiceImpl implements MyCarService {
 	// 매개변수 userId, orderId -> 후에 orders 로 변경?
 	@Override
 	@Transactional
-	public MyCarResponse saveMyCar(Long userId, Long ordersId) {
+	public MyCarResponse saveMyCar(Long ordersId) {
 
-		User user = userRepository.findById(userId).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+		Orders orders = orderRepository.findById(ordersId)
+			.orElseThrow(() -> new MyCarException(MyCarlErrorCode.MY_CAR_NOT_FOUND));
 
 		// 이미 등록된 차량인 경우
 		boolean existsMyCar = mycarRepository.existsByOrdersId(ordersId);
@@ -76,9 +71,7 @@ public class MyCarServiceImpl implements MyCarService {
 			throw new MyCarException(MyCarlErrorCode.CAR_ALREADY_OWNED);
 		}
 
-		Orders orders = orderRepository.findById(ordersId)
-			.orElseThrow(() -> new MyCarException(MyCarlErrorCode.MY_CAR_NOT_FOUND));
-		Mycar mycar = new Mycar(user, orders);
+		Mycar mycar = new Mycar(orders);
 		mycarRepository.save(mycar);
 		return new MyCarResponse(orders);
 	}
