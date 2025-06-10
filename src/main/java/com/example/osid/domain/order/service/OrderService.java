@@ -2,7 +2,9 @@ package com.example.osid.domain.order.service;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.GrantedAuthority;
@@ -40,6 +42,7 @@ import com.example.osid.domain.user.entity.User;
 import com.example.osid.domain.user.exception.UserErrorCode;
 import com.example.osid.domain.user.exception.UserException;
 import com.example.osid.domain.user.repository.UserRepository;
+import com.example.osid.event.OrderCompletedEvent;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,7 +59,7 @@ public class OrderService {
 	private final DealerRepository dealerRepository;
 	private final OrderSearch orderSearch;
 	private final MasterRepository masterRepository;
-	// private final RabbitTemplate rabbitTemplate;
+	private final RabbitTemplate rabbitTemplate;
 
 	// 주문 생성
 	public OrderResponseDto.Add createOrder(CustomUserDetails customUserDetails, OrderRequestDto.Add requestDto) {
@@ -180,12 +183,12 @@ public class OrderService {
 			orders.setActualDeliveryAt(requestDto.getActualDeliveryAt().get());
 		}
 
-		// if (Objects.equals(requestDto.getOrderStatus(), OrderStatus.COMPLETED)) {
-		// 	// 주문 완료 이벤트 메시지 생성
-		// 	OrderCompletedEvent event = new OrderCompletedEvent(orderId);
-		// 	// 메시지 큐로 전송
-		// 	rabbitTemplate.convertAndSend("order.exchange", "order.completed", event);
-		// }
+		if (Objects.equals(requestDto.getOrderStatus(), OrderStatus.COMPLETED)) {
+			// 주문 완료 이벤트 메시지 생성
+			OrderCompletedEvent event = new OrderCompletedEvent(orderId);
+			// 메시지 큐로 전송
+			rabbitTemplate.convertAndSend("order.exchange", "order.completed", event);
+		}
 
 		// List<Option> -> List<String>
 		List<String> optionNames = changeOptions(orders);
