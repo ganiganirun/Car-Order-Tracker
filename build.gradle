@@ -66,6 +66,10 @@ dependencies {
     // jackson-databind-nullable
     implementation 'org.openapitools:jackson-databind-nullable:0.2.1'
 
+    // AOP
+    implementation('org.springframework.boot:spring-boot-starter-aop')
+//    implementation group: 'com.google.guava', name: 'guava', version: '18.0'
+
 
 }
 
