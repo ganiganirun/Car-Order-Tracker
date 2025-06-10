@@ -56,6 +56,7 @@ public class OrderService {
 	private final DealerRepository dealerRepository;
 	private final OrderSearch orderSearch;
 	private final MasterRepository masterRepository;
+	// private final RabbitTemplate rabbitTemplate;
 
 	// 주문 생성
 	public OrderResponseDto.Add createOrder(CustomUserDetails customUserDetails, OrderRequestDto.Add requestDto) {
@@ -178,6 +179,13 @@ public class OrderService {
 		if (requestDto.getActualDeliveryAt().isPresent()) {
 			orders.setActualDeliveryAt(requestDto.getActualDeliveryAt().get());
 		}
+
+		// if (Objects.equals(requestDto.getOrderStatus(), OrderStatus.COMPLETED)) {
+		// 	// 주문 완료 이벤트 메시지 생성
+		// 	OrderCompletedEvent event = new OrderCompletedEvent(orderId);
+		// 	// 메시지 큐로 전송
+		// 	rabbitTemplate.convertAndSend("order.exchange", "order.completed", event);
+		// }
 
 		// List<Option> -> List<String>
 		List<String> optionNames = changeOptions(orders);
