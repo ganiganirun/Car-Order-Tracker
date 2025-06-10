@@ -11,6 +11,7 @@ import com.example.osid.common.auth.EmailValidator;
 import com.example.osid.domain.dealer.dto.response.DealerInfoResponseDto;
 import com.example.osid.domain.dealer.entity.Dealer;
 import com.example.osid.domain.dealer.repository.DealerRepository;
+import com.example.osid.domain.license.service.LicenseKeyService;
 import com.example.osid.domain.master.dto.request.MasterDeletedRequestDto;
 import com.example.osid.domain.master.dto.request.MasterSignUpRequestDto;
 import com.example.osid.domain.master.dto.request.MasterUpdatedRequestDto;
@@ -34,7 +35,9 @@ public class MasterService {
 	private final DealerRepository dealerRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final EmailValidator emailValidator;
+	private final LicenseKeyService licenseKeyService;
 
+	@Transactional
 	public void signUpMaster(MasterSignUpRequestDto masterSignUpRequestDto) {
 
 		// 공통된 이메일이 있는지 확인 ( Master, Dealer, User )
@@ -49,9 +52,14 @@ public class MasterService {
 			masterSignUpRequestDto.getEmail(),
 			encodedPassword,
 			masterSignUpRequestDto.getAddress(),
-			masterSignUpRequestDto.getLicense()
+			masterSignUpRequestDto.getProductKey()
 		);
 		masterRepository.save(master);
+
+		// 3) 라이선스 키 검증 & 할당
+		//    - AVAILABLE 상태인지 확인
+		//    - ASSIGNED 상태로 변경, ownerId = master.getId()
+		licenseKeyService.assignExistingKey(masterSignUpRequestDto.getProductKey(), master.getId());
 
 	}
 
