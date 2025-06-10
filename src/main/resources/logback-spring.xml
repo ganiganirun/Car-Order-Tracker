@@ -1,8 +1,29 @@
 <configuration>
+
+    <!-- 로그 파일 경로 및 이름 설정-->
+    <property name="LOG_PATH" value="logs"/>
+    <property name="LOG_FILE_NAME" value="console"/>
+    <property name="ERR_LOG_FILE_NAME" value="exceptions"/>
+
+    <conversionRule conversionWord="clr"
+                    class="org.springframework.boot.logging.logback.ColorConverter"/>
+
+    <!-- 로그 패턴 설정 -->
+    <property name="LOG_PATTERN"
+              value="[%d{yyyy-MM-dd HH:mm:ss}:%-3relative]  %clr(%-5level) %clr(${PID:-}){magenta} %clr(---){faint} %clr([%15.15thread]){faint} %clr(%-40.40logger{36}){cyan} %clr(:){faint} %msg%n"/>
+
+    <property name="FILE_LOG_PATTERN"
+              value="[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-5level] %logger{36} - %msg%n"/>
+
     <!-- 콘솔 로그 -->
+    <!--    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">-->
+    <!--        <encoder>-->
+    <!--            <pattern>[%d{HH:mm:ss.SSS}] [%-5level] %logger{36} - %msg%n</pattern>-->
+    <!--        </encoder>-->
+    <!--    </appender>-->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>[%d{HH:mm:ss.SSS}] [%-5level] %logger{36} - %msg%n</pattern>
+            <pattern>${LOG_PATTERN}</pattern>
         </encoder>
     </appender>
 
@@ -25,6 +46,31 @@
             <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-5level] %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
+
+    <!-- ERROR 레벨 로그를 별도 파일에 로그 처리 -->
+    <appender name="EXCEPTION_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>error</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <file>${LOG_PATH}/${ERR_LOG_FILE_NAME}.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- .gz,.zip 등을 넣으면 자동 일자별 로그파일 압축 -->
+            <fileNamePattern>${LOG_PATH}/${ERR_LOG_FILE_NAME}.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- 일자별 로그파일 최대 보관주기(~일), 해당 설정일 이상된 파일은 자동으로 제거-->
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ERROR 레벨은 글로벌 예외 헨들러에만 -->
+    <logger name="com.example.osid.common.exception" level="ERROR" additivity="false">
+        <appender-ref ref="EXCEPTION_FILE"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
 
     <!-- 루트 로거: 모든 패키지의 로그를 INFO 레벨로 콘솔+파일에 보낸다 -->
     <root level="INFO">
