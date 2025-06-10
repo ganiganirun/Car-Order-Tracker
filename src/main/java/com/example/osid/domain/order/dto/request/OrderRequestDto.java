@@ -3,6 +3,8 @@ package com.example.osid.domain.order.dto.request;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.openapitools.jackson.nullable.JsonNullable;
+
 import com.example.osid.domain.order.enums.OrderStatus;
 
 import jakarta.validation.constraints.NotBlank;
@@ -35,13 +37,14 @@ public class OrderRequestDto {
 	@Getter
 	@AllArgsConstructor
 	public static class Update {
-		private String address;
+		private JsonNullable<String> address = JsonNullable.undefined();
 
 		private OrderStatus orderStatus;
 
-		private LocalDate expectedDeliveryAt;
+		private JsonNullable<LocalDate> expectedDeliveryAt = JsonNullable.undefined();
 
-		private LocalDate actualDeliveryAt;
+		private JsonNullable<LocalDate> actualDeliveryAt = JsonNullable.undefined();
+
 	}
 
 }

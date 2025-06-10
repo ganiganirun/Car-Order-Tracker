@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(CustomException.class)
 	protected ResponseEntity<CommonResponse<Void>> handleCustomException(CustomException e) {
-		log.error("CustomException: {}", e.getMessage());
+		log.error("CustomException: {}", e.getMessage(), e);
 
 		BaseCode errorCode = e.getBaseCode();
 
@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	protected ResponseEntity<CommonResponse<Void>> handleMethodArgumentNotValidException(
 		MethodArgumentNotValidException e) {
-		log.error("MethodArgumentNotValidException: {}", e.getMessage());
+		log.error("MethodArgumentNotValidException: {}", e.getMessage(), e);
 		//        List<ErrorResponse.FieldError> fieldErrors = processFieldErrors(e.getBindingResult());
 		List<ErrorResponse.FieldError> fieldErrors = processFieldErrors(e.getBindingResult());
 
@@ -62,7 +62,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(EntityNotFoundException.class)
 	protected ResponseEntity<CommonResponse<Void>> handleEntityNotFoundException(EntityNotFoundException e) {
-		log.error("EntityNotFoundException: {}", e.getMessage());
+		log.error("EntityNotFoundException: {}", e.getMessage(), e);
 
 		return new ResponseEntity<>(CommonResponse.error(ErrorCode.ENTITY_NOT_FOUND),
 			ErrorCode.ENTITY_NOT_FOUND.getHttpStatus());
@@ -74,7 +74,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(DataAccessException.class)
 	protected ResponseEntity<CommonResponse<Void>> handleDataAccessException(DataAccessException e) {
-		log.error("DataAccessException: {}", e.getMessage());
+		log.error("DataAccessException: {}", e.getMessage(), e);
 
 		return new ResponseEntity<>(CommonResponse.error(ErrorCode.INTERNAL_SERVER_ERROR),
 			ErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus());
@@ -86,7 +86,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
 	protected ResponseEntity<CommonResponse<Void>> handleHttpRequestMethodNotSupportedException(
 		HttpRequestMethodNotSupportedException e) {
-		log.error("HttpRequestMethodNotSupportedException: {}", e.getMessage());
+		log.error("HttpRequestMethodNotSupportedException: {}", e.getMessage(), e);
 
 		return new ResponseEntity<>(CommonResponse.error(ErrorCode.METHOD_NOT_ALLOWED),
 			ErrorCode.METHOD_NOT_ALLOWED.getHttpStatus());

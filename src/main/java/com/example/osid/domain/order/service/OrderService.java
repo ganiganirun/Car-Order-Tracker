@@ -56,6 +56,7 @@ public class OrderService {
 	private final DealerRepository dealerRepository;
 	private final OrderSearch orderSearch;
 	private final MasterRepository masterRepository;
+	// private final RabbitTemplate rabbitTemplate;
 
 	// 주문 생성
 	public OrderResponseDto.Add createOrder(CustomUserDetails customUserDetails, OrderRequestDto.Add requestDto) {
@@ -141,8 +142,27 @@ public class OrderService {
 		// 추후 다른 방법이 생기면 바뀔 예정
 
 		// 주소 수정
-		if (requestDto.getAddress() != null) {
-			orders.setAddress(requestDto.getAddress());
+		// if (requestDto.getAddress() != null) {
+		// 	orders.setAddress(requestDto.getAddress());
+		// }
+		//
+		// // 주문 상태 수정
+		// if (requestDto.getOrderStatus() != null) {
+		// 	orders.setOrderStatus(requestDto.getOrderStatus());
+		// }
+		//
+		// // 예상 출고일 수정
+		// if (requestDto.getExpectedDeliveryAt() != null) {
+		// 	orders.setExpectedDeliveryAt(requestDto.getExpectedDeliveryAt());
+		// }
+		//
+		// // 실제 출고일 수정
+		// if (requestDto.getActualDeliveryAt() != null) {
+		// 	orders.setActualDeliveryAt(requestDto.getActualDeliveryAt());
+		// }
+
+		if (requestDto.getAddress().isPresent()) {
+			orders.setAddress(requestDto.getAddress().get());
 		}
 
 		// 주문 상태 수정
@@ -151,14 +171,21 @@ public class OrderService {
 		}
 
 		// 예상 출고일 수정
-		if (requestDto.getExpectedDeliveryAt() != null) {
-			orders.setExpectedDeliveryAt(requestDto.getExpectedDeliveryAt());
+		if (requestDto.getExpectedDeliveryAt().isPresent()) {
+			orders.setExpectedDeliveryAt(requestDto.getExpectedDeliveryAt().get());
 		}
 
 		// 실제 출고일 수정
-		if (requestDto.getActualDeliveryAt() != null) {
-			orders.setActualDeliveryAt(requestDto.getActualDeliveryAt());
+		if (requestDto.getActualDeliveryAt().isPresent()) {
+			orders.setActualDeliveryAt(requestDto.getActualDeliveryAt().get());
 		}
+
+		// if (Objects.equals(requestDto.getOrderStatus(), OrderStatus.COMPLETED)) {
+		// 	// 주문 완료 이벤트 메시지 생성
+		// 	OrderCompletedEvent event = new OrderCompletedEvent(orderId);
+		// 	// 메시지 큐로 전송
+		// 	rabbitTemplate.convertAndSend("order.exchange", "order.completed", event);
+		// }
 
 		// List<Option> -> List<String>
 		List<String> optionNames = changeOptions(orders);

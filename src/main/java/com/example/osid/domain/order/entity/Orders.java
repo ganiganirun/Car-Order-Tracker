@@ -46,7 +46,7 @@ public class Orders extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false)
+	@Column(nullable = true)
 	private String address; // 배송지
 
 	private String merchantUid;  // 주문 고유 식별자 (결제용)
