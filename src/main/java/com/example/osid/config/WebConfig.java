@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import com.example.osid.common.auth.LicenseValidationInterceptor;
 import com.example.osid.common.logging.ApiLoggingInterceptor;
 
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 public class WebConfig implements WebMvcConfigurer {
 
 	private final ApiLoggingInterceptor apiLoggingInterceptor;  // 로깅 인터셉터
+	private final LicenseValidationInterceptor licenseValidationInterceptor;
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
@@ -27,5 +29,14 @@ public class WebConfig implements WebMvcConfigurer {
 				"/api/dealers/signup",  // Dealer 회원가입
 				"/api/users/signup"     // User 회원가입
 			);
+		// 라이선스 유효성 검증
+		registry.addInterceptor(licenseValidationInterceptor)
+			.addPathPatterns("/api/**")
+			.excludePathPatterns(
+				"/api/auth/login",
+				"/api/masters/signup",
+				"/api/dealers/signup",  // Dealer 회원가입
+				"/api/users/signup"     // User 회원가입
+			); // 필요에 따라 제외 경로 조정
 	}
 }

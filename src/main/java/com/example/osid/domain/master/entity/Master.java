@@ -50,7 +50,7 @@ public class Master extends BaseEntity {
 	private String address; //주소
 
 	@Column(nullable = false)
-	private String license; //라이센스
+	private String productKey; //라이센스
 
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
@@ -69,7 +69,7 @@ public class Master extends BaseEntity {
 		String email,
 		String password,
 		String address,
-		String license
+		String productKey
 	) {
 		this.businessNumber = businessNumber;
 		this.name = name;
@@ -77,7 +77,7 @@ public class Master extends BaseEntity {
 		this.email = email;
 		this.password = password;
 		this.address = address;
-		this.license = license;
+		this.productKey = productKey;
 	}
 
 	public void updatedMaster(MasterUpdatedRequestDto masterUpdatedRequestDto) {
@@ -96,6 +96,11 @@ public class Master extends BaseEntity {
 	public void softDeletedMaster() {
 		this.isDeleted = true;
 		this.deletedAt = LocalDateTime.now();
+	}
+
+	// 마스터 권한 있는 친구가 License 강제 삽입
+	public void setProductKey(String productKey) {
+		this.productKey = productKey;
 	}
 
 }
