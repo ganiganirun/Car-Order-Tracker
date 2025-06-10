@@ -35,6 +35,6 @@ public class MasterSignUpRequestDto {
 	private String address;
 
 	@NotEmpty(message = "라이센스는 필수입니다.")
-	private String license;
+	private String productKey;
 
 }
