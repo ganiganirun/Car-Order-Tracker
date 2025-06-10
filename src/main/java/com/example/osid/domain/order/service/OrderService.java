@@ -43,6 +43,8 @@ import com.example.osid.domain.user.exception.UserErrorCode;
 import com.example.osid.domain.user.exception.UserException;
 import com.example.osid.domain.user.repository.UserRepository;
 import com.example.osid.event.OrderCompletedEvent;
+import com.example.osid.event.entity.FailedEvent;
+import com.example.osid.event.repository.FailedEventRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,6 +62,7 @@ public class OrderService {
 	private final OrderSearch orderSearch;
 	private final MasterRepository masterRepository;
 	private final RabbitTemplate rabbitTemplate;
+	private final FailedEventRepository failedEventRepository;
 
 	// 주문 생성
 	public OrderResponseDto.Add createOrder(CustomUserDetails customUserDetails, OrderRequestDto.Add requestDto) {
@@ -186,8 +189,13 @@ public class OrderService {
 		if (Objects.equals(requestDto.getOrderStatus(), OrderStatus.COMPLETED)) {
 			// 주문 완료 이벤트 메시지 생성
 			OrderCompletedEvent event = new OrderCompletedEvent(orderId);
-			// 메시지 큐로 전송
-			rabbitTemplate.convertAndSend("order.exchange", "order.completed", event);
+			try {
+				//메시지 큐로 전송
+				rabbitTemplate.convertAndSend("order.exchange", "order.completed", event);
+			} catch (Exception e) {
+				// 실패 이벤트 저장
+				failedEventRepository.save(new FailedEvent(event.getOrderId(), 0, e.getMessage()));
+			}
 		}
 
 		// List<Option> -> List<String>

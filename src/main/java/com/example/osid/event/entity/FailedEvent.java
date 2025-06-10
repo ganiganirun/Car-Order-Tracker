@@ -37,4 +37,9 @@ public class FailedEvent extends BaseEntity {
 		this.errorMessage = event.getErrorMessage();
 	}
 
+	public FailedEvent(Long orderId, int retryCount, String errorMessage) {
+		this.orderId = orderId;
+		this.retryCount = retryCount;
+		this.errorMessage = errorMessage;
+	}
 }
