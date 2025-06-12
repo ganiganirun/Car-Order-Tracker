@@ -217,6 +217,14 @@ public class OrderService {
 
 	}
 
+	// 주문 취소
+	@Transactional
+	public void cancelOrder(Long orderId) {
+		Orders order = orderRepository.findById(orderId)
+			.orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
+		order.setOrderStatus(OrderStatus.FAILED);
+	}
+
 	public Object findOrder(CustomUserDetails customUserDetails, Long orderId) {
 
 		// 예외처리 refactor
