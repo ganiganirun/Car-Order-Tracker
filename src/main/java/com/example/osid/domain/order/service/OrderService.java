@@ -2,7 +2,9 @@ package com.example.osid.domain.order.service;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.GrantedAuthority;
@@ -40,6 +42,9 @@ import com.example.osid.domain.user.entity.User;
 import com.example.osid.domain.user.exception.UserErrorCode;
 import com.example.osid.domain.user.exception.UserException;
 import com.example.osid.domain.user.repository.UserRepository;
+import com.example.osid.event.OrderCompletedEvent;
+import com.example.osid.event.entity.FailedEvent;
+import com.example.osid.event.repository.FailedEventRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +61,8 @@ public class OrderService {
 	private final DealerRepository dealerRepository;
 	private final OrderSearch orderSearch;
 	private final MasterRepository masterRepository;
+	private final RabbitTemplate rabbitTemplate;
+	private final FailedEventRepository failedEventRepository;
 
 	// 주문 생성
 	public OrderResponseDto.Add createOrder(CustomUserDetails customUserDetails, OrderRequestDto.Add requestDto) {
@@ -73,10 +80,10 @@ public class OrderService {
 		 * */
 
 		// 예외처리 refactor
-		Dealer dealer = dealerRepository.findById(customUserDetails.getId())
+		Dealer dealer = dealerRepository.findByEmailAndIsDeletedFalse(customUserDetails.getEmail())
 			.orElseThrow(() -> new DealerException(DealerErrorCode.DEALER_NOT_FOUND));
 
-		User user = userRepository.findByEmail(requestDto.getUserEmail())
+		User user = userRepository.findByEmailAndIsDeletedFalse(requestDto.getUserEmail())
 			.orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
 		Model model = modelRepository.findById(requestDto.getModelId())
@@ -141,8 +148,27 @@ public class OrderService {
 		// 추후 다른 방법이 생기면 바뀔 예정
 
 		// 주소 수정
-		if (requestDto.getAddress() != null) {
-			orders.setAddress(requestDto.getAddress());
+		// if (requestDto.getAddress() != null) {
+		// 	orders.setAddress(requestDto.getAddress());
+		// }
+		//
+		// // 주문 상태 수정
+		// if (requestDto.getOrderStatus() != null) {
+		// 	orders.setOrderStatus(requestDto.getOrderStatus());
+		// }
+		//
+		// // 예상 출고일 수정
+		// if (requestDto.getExpectedDeliveryAt() != null) {
+		// 	orders.setExpectedDeliveryAt(requestDto.getExpectedDeliveryAt());
+		// }
+		//
+		// // 실제 출고일 수정
+		// if (requestDto.getActualDeliveryAt() != null) {
+		// 	orders.setActualDeliveryAt(requestDto.getActualDeliveryAt());
+		// }
+
+		if (requestDto.getAddress().isPresent()) {
+			orders.setAddress(requestDto.getAddress().get());
 		}
 
 		// 주문 상태 수정
@@ -151,13 +177,25 @@ public class OrderService {
 		}
 
 		// 예상 출고일 수정
-		if (requestDto.getExpectedDeliveryAt() != null) {
-			orders.setExpectedDeliveryAt(requestDto.getExpectedDeliveryAt());
+		if (requestDto.getExpectedDeliveryAt().isPresent()) {
+			orders.setExpectedDeliveryAt(requestDto.getExpectedDeliveryAt().get());
 		}
 
 		// 실제 출고일 수정
-		if (requestDto.getActualDeliveryAt() != null) {
-			orders.setActualDeliveryAt(requestDto.getActualDeliveryAt());
+		if (requestDto.getActualDeliveryAt().isPresent()) {
+			orders.setActualDeliveryAt(requestDto.getActualDeliveryAt().get());
+		}
+
+		if (Objects.equals(requestDto.getOrderStatus(), OrderStatus.COMPLETED)) {
+			// 주문 완료 이벤트 메시지 생성
+			OrderCompletedEvent event = new OrderCompletedEvent(orderId);
+			try {
+				//메시지 큐로 전송
+				rabbitTemplate.convertAndSend("order.exchange", "order.completed", event);
+			} catch (Exception e) {
+				// 실패 이벤트 저장
+				failedEventRepository.save(new FailedEvent(event.getOrderId(), 0, e.getMessage()));
+			}
 		}
 
 		// List<Option> -> List<String>

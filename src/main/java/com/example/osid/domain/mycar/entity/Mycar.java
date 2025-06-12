@@ -43,9 +43,9 @@ public class Mycar extends BaseEntity {
 	@Column
 	private LocalDateTime deletedAt;
 
-	public Mycar(User user, Orders orders) {
-		this.user = user;
+	public Mycar(Orders orders) {
 		this.orders = orders;
+		this.user = orders.getUser();
 	}
 
 	public void setDeletedAt() {

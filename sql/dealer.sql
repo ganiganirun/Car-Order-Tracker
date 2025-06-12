@@ -16,7 +16,7 @@ VALUES (1,
         '딜러A1',
         '미배정',
         '010-1111-2222',
-        'APPLICANT',
+        'DEALER',
         1, -- MasterA(id=1)와 연관
         FALSE,
         NULL,

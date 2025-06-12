@@ -6,6 +6,8 @@ import com.example.osid.common.entity.BaseEntity;
 import com.example.osid.domain.model.dto.ModelUpdateRequest;
 import com.example.osid.domain.model.enums.ModelCategory;
 import com.example.osid.domain.model.enums.ModelColor;
+import com.example.osid.domain.model.exception.ModelErrorCode;
+import com.example.osid.domain.model.exception.ModelException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -71,6 +73,9 @@ public class Model extends BaseEntity {
 	}
 
 	public void setDeletedAt() {
+		if (this.deletedAt != null) {
+			throw new ModelException(ModelErrorCode.MODEL_ALREADY_DELETED);
+		}
 		this.deletedAt = LocalDateTime.now();
 	}
 

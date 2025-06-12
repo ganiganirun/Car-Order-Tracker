@@ -11,6 +11,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ModelResponse {
 
+	private final Long id;
 	private final String name;
 	private final ModelColor color;
 	private final String description;
@@ -20,7 +21,7 @@ public class ModelResponse {
 	private final Long price;
 
 	public static ModelResponse from(Model model) {
-		return new ModelResponse(
+		return new ModelResponse(model.getId(),
 			model.getName(), model.getColor(), model.getDescription(),
 			model.getImage(), model.getCategory(), model.getSeatCount(),
 			model.getPrice()
