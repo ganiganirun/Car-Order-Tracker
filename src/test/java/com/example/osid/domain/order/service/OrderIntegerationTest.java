@@ -9,6 +9,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -53,6 +54,9 @@ public class OrderIntegerationTest {
 	@Autowired
 	private MasterRepository masterRepository;
 
+	@Autowired
+	private ObjectMapper objectMapper;
+
 	private String masterAccessToken;
 	private Long masterId = 1L;
 
@@ -61,6 +65,8 @@ public class OrderIntegerationTest {
 
 	private String dealerAccessToken;
 	private Long dealerId = 1L;
+
+	private Long orderId = 1L;
 
 	@BeforeEach
 	void setUp() {
@@ -166,6 +172,235 @@ public class OrderIntegerationTest {
 		// then
 		actions.andExpect(status().isCreated())
 			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("User 주문수정_접근실패")
+	void updateOrderAsUser() throws Exception {
+		// given
+		OrderRequestDto.Update dto = new OrderRequestDto.Update(
+			JsonNullable.of("서울 강남"),
+			null,
+			JsonNullable.undefined(),
+			JsonNullable.undefined()
+		);
+
+		// when
+		ResultActions actions = mockMvc.perform(
+			patch("/api/dealers/order/{id}", orderId)
+				.header("Authorization", "Bearer " + userAccessToken)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(dto))
+		);
+
+		// then
+		actions.andExpect(status().isForbidden())
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("Master 주문수정_접근실패")
+	void updateOrderAsMaster() throws Exception {
+		// given
+		OrderRequestDto.Update dto = new OrderRequestDto.Update(
+			JsonNullable.of("서울 강남"),
+			null,
+			JsonNullable.undefined(),
+			JsonNullable.undefined()
+		);
+
+		// when
+		ResultActions actions = mockMvc.perform(
+			patch("/api/dealers/order/{id}", orderId)
+				.header("Authorization", "Bearer " + masterAccessToken)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(dto))
+		);
+
+		// then
+		actions.andExpect(status().isForbidden())
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("Dealer 주문수정_성공")
+	void updateOrderAsDealer() throws Exception {
+		// given
+		OrderRequestDto.Update dto = new OrderRequestDto.Update(
+			JsonNullable.of("서울 강남"),
+			null,
+			JsonNullable.undefined(),
+			JsonNullable.undefined()
+		);
+
+		// when
+		ResultActions actions = mockMvc.perform(
+			patch("/api/dealers/order/{id}", orderId)
+				.header("Authorization", "Bearer " + dealerAccessToken)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(dto))
+		);
+
+		// then
+		actions
+			.andDo(print())
+			.andExpect(status().isOk());
+	}
+
+	@Test
+	@DisplayName("User 주문조회_접근성공")
+	void findOrderAsUser() throws Exception {
+
+		// when
+		ResultActions actions = mockMvc.perform(
+			get("/api/order/{id}", orderId)
+				.header("Authorization", "Bearer " + userAccessToken)
+				.contentType(MediaType.APPLICATION_JSON)
+
+		);
+
+		// then
+		actions.andExpect(status().isOk())
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("Master 주문조회_성공")
+	void findOrderAsMaster() throws Exception {
+
+		// when
+		ResultActions actions = mockMvc.perform(
+			get("/api/order/{id}", orderId)
+				.header("Authorization", "Bearer " + masterAccessToken)
+				.contentType(MediaType.APPLICATION_JSON)
+
+		);
+
+		// then
+		actions.andExpect(status().isOk())
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("Dealer 주문조회_성공")
+	void findOrderAsDealer() throws Exception {
+
+		// when
+		ResultActions actions = mockMvc.perform(
+			get("/api/order/{id}", orderId)
+				.header("Authorization", "Bearer " + dealerAccessToken)
+				.contentType(MediaType.APPLICATION_JSON)
+
+		);
+
+		// then
+		actions
+			.andDo(print())
+			.andExpect(status().isOk());
+	}
+
+	@Test
+	@DisplayName("User 주문전체조회_접근성공")
+	void findAllOrderAsUser() throws Exception {
+
+		// when
+		ResultActions actions = mockMvc.perform(
+			get("/api/order")
+				.header("Authorization", "Bearer " + userAccessToken)
+				.contentType(MediaType.APPLICATION_JSON)
+
+		);
+
+		// then
+		actions.andExpect(status().isOk())
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("Master 주문전체조회_성공")
+	void findAllOrderAsMaster() throws Exception {
+
+		// when
+		ResultActions actions = mockMvc.perform(
+			get("/api/order")
+				.header("Authorization", "Bearer " + masterAccessToken)
+				.contentType(MediaType.APPLICATION_JSON)
+
+		);
+
+		// then
+		actions.andExpect(status().isOk())
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("Dealer 주문전체조회_성공")
+	void findAllOrderAsDealer() throws Exception {
+
+		// when
+		ResultActions actions = mockMvc.perform(
+			get("/api/order")
+				.header("Authorization", "Bearer " + dealerAccessToken)
+				.contentType(MediaType.APPLICATION_JSON)
+
+		);
+
+		// then
+		actions
+			.andDo(print())
+			.andExpect(status().isOk());
+	}
+
+	@Test
+	@DisplayName("User 주문삭제_접근실패")
+	void deleteOrderAsUser() throws Exception {
+
+		// when
+		ResultActions actions = mockMvc.perform(
+			delete("/api/dealers/order/{id}", orderId)
+				.header("Authorization", "Bearer " + userAccessToken)
+				.contentType(MediaType.APPLICATION_JSON)
+
+		);
+
+		// then
+		actions.andExpect(status().isForbidden())
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("Master 주문주문삭제_접근실패")
+	void deleteOrderAsMaster() throws Exception {
+
+		// when
+		ResultActions actions = mockMvc.perform(
+			delete("/api/dealers/order/{id}", orderId)
+				.header("Authorization", "Bearer " + masterAccessToken)
+				.contentType(MediaType.APPLICATION_JSON)
+
+		);
+
+		// then
+		actions.andExpect(status().isForbidden())
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("Dealer 주문삭제_성공")
+	void deleteOrderAsDealer() throws Exception {
+
+		// when
+		ResultActions actions = mockMvc.perform(
+			delete("/api/dealers/order/{id}", orderId)
+				.header("Authorization", "Bearer " + dealerAccessToken)
+				.contentType(MediaType.APPLICATION_JSON)
+
+		);
+
+		// then
+		actions
+			.andDo(print())
+			.andExpect(status().isOk());
 	}
 
 }
