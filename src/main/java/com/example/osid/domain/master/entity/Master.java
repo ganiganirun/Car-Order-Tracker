@@ -53,10 +53,12 @@ public class Master extends BaseEntity {
 	private String productKey; //라이센스
 
 	@Column(nullable = false)
+	@Builder.Default
 	@Enumerated(EnumType.STRING)
 	private Role role = Role.MASTER; //역할
 
 	@Column(nullable = false)
+	@Builder.Default
 	private boolean isDeleted = false;
 
 	// null 허용: 삭제 전에는 null
