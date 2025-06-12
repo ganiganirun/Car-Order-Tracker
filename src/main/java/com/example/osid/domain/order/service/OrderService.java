@@ -80,10 +80,10 @@ public class OrderService {
 		 * */
 
 		// 예외처리 refactor
-		Dealer dealer = dealerRepository.findById(customUserDetails.getId())
+		Dealer dealer = dealerRepository.findByEmailAndIsDeletedFalse(customUserDetails.getEmail())
 			.orElseThrow(() -> new DealerException(DealerErrorCode.DEALER_NOT_FOUND));
 
-		User user = userRepository.findByEmail(requestDto.getUserEmail())
+		User user = userRepository.findByEmailAndIsDeletedFalse(requestDto.getUserEmail())
 			.orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
 		Model model = modelRepository.findById(requestDto.getModelId())
