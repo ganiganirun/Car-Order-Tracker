@@ -15,7 +15,6 @@ import com.example.osid.domain.mycar.exception.MyCarErrorCode;
 import com.example.osid.domain.mycar.exception.MyCarException;
 import com.example.osid.domain.mycar.repository.MycarRepository;
 import com.example.osid.domain.order.entity.Orders;
-import com.example.osid.domain.order.enums.OrderStatus;
 import com.example.osid.domain.order.exception.OrderErrorCode;
 import com.example.osid.domain.order.exception.OrderException;
 import com.example.osid.domain.order.repository.OrderRepository;
@@ -66,10 +65,10 @@ public class MyCarServiceImpl implements MyCarService {
 
 		Orders orders = orderRepository.findById(ordersId)
 			.orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
-		// 완료된 주문이 아닐 경우
-		if (!OrderStatus.COMPLETED.equals(orders.getOrderStatus())) {
-			throw new MyCarException(MyCarErrorCode.ORDER_NOT_COMPLETED);
-		}
+		// // 완료된 주문이 아닐 경우
+		// if (!OrderStatus.COMPLETED.equals(orders.getOrderStatus())) {
+		// 	throw new MyCarException(MyCarErrorCode.ORDER_NOT_COMPLETED);
+		// }
 
 		// 이미 등록된 차량인 경우
 		boolean existsMyCar = mycarRepository.existsByOrdersId(ordersId);
