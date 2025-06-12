@@ -68,7 +68,7 @@ public class OptionServiceImpl implements OptionService {
 	@Override
 	@Transactional(readOnly = true)
 	@PreAuthorize("hasRole('MASTER')")
-	public OptionMasterResponse findModelForMaster(Long modelId) {
+	public OptionMasterResponse findOptionForMaster(Long modelId) {
 		Option option = optionRepository.findById(modelId)
 			.orElseThrow(() -> new OptionException(OptionErrorCode.OPTION_NOT_FOUND));
 		return OptionMasterResponse.from(option);
@@ -78,7 +78,7 @@ public class OptionServiceImpl implements OptionService {
 	@Override
 	@Transactional(readOnly = true)
 	@PreAuthorize("hasRole('MASTER')")
-	public Page<OptionMasterResponse> findAllModelForMaster(Pageable pageable, String deletedFilter) {
+	public Page<OptionMasterResponse> findAllOptionForMaster(Pageable pageable, String deletedFilter) {
 
 		Page<Option> optionList = optionRepository.findAllOption(pageable, deletedFilter);
 		return optionList.map(OptionMasterResponse::from);

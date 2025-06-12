@@ -83,7 +83,7 @@ public class OptionController {
 	@ResponseStatus(HttpStatus.OK)
 	public CommonResponse<OptionMasterResponse> findOptionForMaster(@PathVariable Long optionId) {
 
-		return CommonResponse.ok(optionService.findModelForMaster(optionId));
+		return CommonResponse.ok(optionService.findOptionForMaster(optionId));
 	}
 
 	// master 전용 옵션 전체 조회
@@ -94,6 +94,6 @@ public class OptionController {
 		@RequestParam(required = false, defaultValue = "all", name = "deleted") String deletedFilter
 	) {
 
-		return CommonResponse.ok(optionService.findAllModelForMaster(pageable, deletedFilter));
+		return CommonResponse.ok(optionService.findAllOptionForMaster(pageable, deletedFilter));
 	}
 }

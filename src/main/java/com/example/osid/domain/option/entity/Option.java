@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import com.example.osid.common.entity.BaseEntity;
 import com.example.osid.domain.option.dto.OptionUpdateRequest;
 import com.example.osid.domain.option.enums.OptionCategory;
+import com.example.osid.domain.option.exception.OptionErrorCode;
+import com.example.osid.domain.option.exception.OptionException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -59,6 +61,9 @@ public class Option extends BaseEntity {
 	}
 
 	public void setDeletedAt() {
+		if (this.deletedAt != null) {
+			throw new OptionException(OptionErrorCode.OPTION_ALREADY_DELETED);
+		}
 		this.deletedAt = LocalDateTime.now();
 	}
 
