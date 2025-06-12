@@ -20,7 +20,7 @@ public interface OptionService {
 
 	void deleteOption(Long optionId);
 
-	OptionMasterResponse findModelForMaster(Long optionId);
+	OptionMasterResponse findOptionForMaster(Long optionId);
 
-	Page<OptionMasterResponse> findAllModelForMaster(Pageable pageable, String deletedFilter);
+	Page<OptionMasterResponse> findAllOptionForMaster(Pageable pageable, String deletedFilter);
 }
