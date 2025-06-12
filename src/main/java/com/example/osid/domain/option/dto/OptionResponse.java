@@ -10,6 +10,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public class OptionResponse {
 
+	private final Long id;
+
 	private final String name; //옵션 이름
 
 	private final String description; //옵션 설명
@@ -22,6 +24,7 @@ public class OptionResponse {
 
 	public static OptionResponse from(Option option) {
 		return new OptionResponse(
+			option.getId(),
 			option.getName(),
 			option.getDescription(),
 			option.getImage(),
