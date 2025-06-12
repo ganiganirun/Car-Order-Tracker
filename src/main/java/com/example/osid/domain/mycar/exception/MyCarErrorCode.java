@@ -9,7 +9,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum MyCarlErrorCode implements BaseCode {
+public enum MyCarErrorCode implements BaseCode {
 	MY_CAR_NOT_FOUND(HttpStatus.NOT_FOUND, "MY_CAR_C001", "존재하지 않는 차량입니다."),
 	CAR_ALREADY_OWNED(HttpStatus.CONFLICT, "MY_CAR_002", "이미 등록된 차량입니다"),
 	MY_CAR_NOT_OWED(HttpStatus.FORBIDDEN, "MY_CAR_003", "접근 권한이 없습니다."),
