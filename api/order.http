@@ -1,0 +1,14 @@
+### 환경 변수
+@host = http://localhost
+@port = 8080
+@baseUrl = {{host}}:{{port}}
+
+### 주문생성
+POST {{baseUrl}}/api/dealers/orders
+Content-Type: application/json
+Authorization: Bearer {{token}} # 로그인에서 저장된 토큰 가져옴
+
+{
+  "content": "리뷰 내용",
+  "score": 3
+}
