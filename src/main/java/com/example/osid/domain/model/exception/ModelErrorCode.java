@@ -10,7 +10,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ModelErrorCode implements BaseCode {
-	MODEL_NOT_FOUND(HttpStatus.NOT_FOUND, "M001", "모델이 없거나 삭제된 상태입니다.");
+	MODEL_NOT_FOUND(HttpStatus.NOT_FOUND, "MODEL_001", "모델이 없거나 삭제된 상태입니다."),
+	MODEL_ALREADY_DELETED(HttpStatus.NOT_FOUND, "MODEL_002", "이미 삭제된 모델입니다.");
 
 	private final HttpStatus httpStatus;
 	private final String code;
