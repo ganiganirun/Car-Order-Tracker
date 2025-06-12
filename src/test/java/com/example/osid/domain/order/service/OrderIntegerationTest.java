@@ -369,7 +369,7 @@ public class OrderIntegerationTest {
 	}
 
 	@Test
-	@DisplayName("Master 주문주문삭제_접근실패")
+	@DisplayName("Master 주문삭제_접근실패")
 	void deleteOrderAsMaster() throws Exception {
 
 		// when
