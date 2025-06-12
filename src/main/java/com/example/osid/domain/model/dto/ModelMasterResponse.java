@@ -13,6 +13,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ModelMasterResponse {
 
+	private final Long id;
 	private final String name;
 	private final ModelColor color;
 	private final String description;
@@ -23,7 +24,7 @@ public class ModelMasterResponse {
 	private final LocalDateTime deletedAt;
 
 	public static ModelMasterResponse from(Model model) {
-		return new ModelMasterResponse(
+		return new ModelMasterResponse(model.getId(),
 			model.getName(), model.getColor(), model.getDescription(),
 			model.getImage(), model.getCategory(), model.getSeatCount(),
 			model.getPrice(), model.getDeletedAt()
