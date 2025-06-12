@@ -1,0 +1,54 @@
+### 환경 변수
+@host = http://localhost
+@port = 8080
+@baseUrl = {{host}}:{{port}}
+
+### 옵션 단건 조회
+GET {{baseUrl}}/api/option/1
+
+
+### 옵션 전체 조회
+GET {{baseUrl}}/api/option
+
+
+### 아래는 마스터 권한 유저만 가능
+
+### 옵션 생성
+POST {{baseUrl}}/api/option
+Content-Type: application/json
+Authorization: Bearer {{token}} # 로그인에서 저장된 토큰 가져옴
+
+{
+  "name": "옵션명",
+  "description": "옵션 설명",
+  "image": "옵션이미지",
+  "category": "SUNROOF",
+  "price": "150000"
+}
+
+
+### 옵션 수정
+PATCH {{baseUrl}}/api/option/1
+Content-Type: application/json
+Authorization: Bearer {{token}} # 로그인에서 저장된 토큰 가져옴
+
+{
+  "name": "옵션명 수정",
+  "description": "옵션 설명",
+  "image": "모델 이미지",
+  "category": "SUNROOF",
+  "price": "15000000"
+}
+
+### 옵션 삭제
+DELETE {{baseUrl}}/api/option/1
+Authorization: Bearer {{token}} # 로그인에서 저장된 토큰 가져옴
+
+
+### 옵션 단건 조회 - master 전용
+GET {{baseUrl}}/api/option/master/1
+Authorization: Bearer {{token}} # 로그인에서 저장된 토큰 가져옴
+
+### 옵션 전체 조회 - master 전용
+GET {{baseUrl}}/api/option/master?deleted=true
+Authorization: Bearer {{token}} # 로그인에서 저장된 토큰 가져옴
