@@ -3,7 +3,6 @@ package com.example.osid.domain.payment.entity;
 import java.time.LocalDate;
 
 import com.example.osid.common.entity.BaseEntity;
-import com.example.osid.domain.order.entity.Orders;
 import com.example.osid.domain.payment.enums.PaymentStatus;
 import com.example.osid.domain.user.entity.User;
 
@@ -46,13 +45,9 @@ public class Payments extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private User user;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	private Orders order;
-
-	public Payments(User user, Orders order, Long amount, String impUid, PaymentStatus paymentStatus,
+	public Payments(User user, Long amount, String impUid, PaymentStatus paymentStatus,
 		LocalDate paidAt) {
 		this.user = user;
-		this.order = order;
 		this.amount = amount;
 		this.impUid = impUid;
 		this.paymentStatus = paymentStatus;
