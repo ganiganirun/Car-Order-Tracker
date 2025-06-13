@@ -45,15 +45,15 @@ public class MasterService {
 
 		String encodedPassword = passwordEncoder.encode(masterSignUpRequestDto.getPassword());
 
-		Master master = new Master(
-			masterSignUpRequestDto.getBusinessNumber(),
-			masterSignUpRequestDto.getName(),
-			masterSignUpRequestDto.getPhoneNumber(),
-			masterSignUpRequestDto.getEmail(),
-			encodedPassword,
-			masterSignUpRequestDto.getAddress(),
-			masterSignUpRequestDto.getProductKey()
-		);
+		Master master = Master.builder()
+			.businessNumber(masterSignUpRequestDto.getBusinessNumber())
+			.name(masterSignUpRequestDto.getName())
+			.phoneNumber(masterSignUpRequestDto.getPhoneNumber())
+			.email(masterSignUpRequestDto.getEmail())
+			.password(encodedPassword)
+			.address(masterSignUpRequestDto.getAddress())
+			.productKey(masterSignUpRequestDto.getProductKey())
+			.build();
 		masterRepository.save(master);
 
 		// 3) 라이선스 키 검증 & 할당
