@@ -1,0 +1,25 @@
+@host = http://localhost
+@port = 8080
+@baseUrl = {{host}}:{{port}}
+
+### License 강제 발급(미사용)
+POST {{baseUrl}}/licenses/assign?ownerId=1
+Content-Type: application/json
+
+
+### License 전체 조회
+GET {{baseUrl}}/api/licenses
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+
+### License 취소 // revoke/productKey 입력
+POST {{baseUrl}}/api/licenses/revoke/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+
+### License 검증 // validate/productKey 입력
+GET {{baseUrl}}/api/licenses/validate/
+Content-Type: application/json
+Authorization: Bearer {{token}}
