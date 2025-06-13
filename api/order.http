@@ -3,12 +3,41 @@
 @port = 8080
 @baseUrl = {{host}}:{{port}}
 
-### 주문생성
+### 주문 생성
 POST {{baseUrl}}/api/dealers/orders
 Content-Type: application/json
 Authorization: Bearer {{token}} # 로그인에서 저장된 토큰 가져옴
 
 {
-  "content": "리뷰 내용",
-  "score": 3
+  "userEmail": "user01@example.com",
+  "option": [
+    1,
+    2,
+    4
+  ],
+  "modelId": 1,
+  "address": "서울시 강남구..."
 }
+
+### 주문 생성
+PATCH {{baseUrl}}/api/dealers/orders/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "address": null,
+  "orderStatus": "COMPLETED"
+}
+
+### 주문 단건조회
+PATCH {{baseUrl}}/api/orders/1
+Authorization: Bearer {{token}}
+
+
+### 주문 전체조회
+PATCH {{baseUrl}}/api/orders
+Authorization: Bearer {{token}}
+
+### 주문 전체조회
+PATCH {{baseUrl}}/api/dealers/orders/1
+Authorization: Bearer {{token}}

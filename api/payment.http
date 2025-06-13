@@ -1,0 +1,14 @@
+### 환경 변수
+@host = http://localhost
+@port = 8080
+@baseUrl = {{host}}:{{port}}
+
+### 결제 취소
+POST {{baseUrl}}/api/payment/cancel
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "merchantUid": "order_4712d946",
+  "refundAmount": 0
+}

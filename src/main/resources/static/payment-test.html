@@ -100,14 +100,14 @@
                 if (pendingOrderId) {
                     // 주문 자체를 취소(삭제) API 호출
                     $.ajax({
-                        url: `/api/dealers/order/${pendingOrderId}`,
-                        type: 'DELETE',
+                        url: `/api/dealers/order/${pendingOrderId}/fail`,
+                        type: 'POST',
                         headers: {'Authorization': 'Bearer ' + token},
                         success: function () {
-                            console.log("미결제 주문 삭제 완료");
+                            console.log("미결제 주문 상태변경 완료");
                         },
                         error: function (xhr) {
-                            console.error("주문 삭제 실패", xhr);
+                            console.error("주문 실패 상태변경 실패", xhr);
                         }
                     });
                     pendingOrderId = null;

@@ -1,0 +1,59 @@
+### 환경 변수
+@host = http://localhost
+@port = 8080
+@baseUrl = {{host}}:{{port}}
+
+### 모델 단건 조회
+GET {{baseUrl}}/api/model/1
+Content-Type: application/json
+
+
+### 모델 전체 조회
+GET {{baseUrl}}/api/model
+
+
+### 아래는 마스터 권한 유저만 가능
+
+### 모델 생성
+POST {{baseUrl}}/api/model
+Content-Type: application/json
+Authorization: Bearer {{token}} # 로그인에서 저장된 토큰 가져옴
+
+{
+  "name": "모델명",
+  "color": "RED",
+  "description": "모델 설명입니다",
+  "image": "모델 이미지 주소",
+  "category": "SAFETY",
+  "seatCount": "7",
+  "price": 150000000000
+}
+
+
+### 모델 수정
+PATCH {{baseUrl}}/api/model/1
+Content-Type: application/json
+Authorization: Bearer {{token}} # 로그인에서 저장된 토큰 가져옴
+
+{
+  "name": "변경 모델명",
+  "color": "RED",
+  "description": "모델 설명입니다",
+  "image": "모델 이미지 주소",
+  "category": "SAFETY",
+  "seatCount": "7",
+  "price": 50000000000
+}
+
+### 모델 삭제
+DELETE {{baseUrl}}/api/model/1
+Authorization: Bearer {{token}} # 로그인에서 저장된 토큰 가져옴
+
+
+### 모델 단건 조회 - master 전용
+GET {{baseUrl}}/api/model/master/1
+Authorization: Bearer {{token}} # 로그인에서 저장된 토큰 가져옴
+
+### 모델 전체 조회 - master 전용
+GET {{baseUrl}}/api/model/master
+Authorization: Bearer {{token}} # 로그인에서 저장된 토큰 가져옴
