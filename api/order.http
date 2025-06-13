@@ -3,12 +3,9 @@
 @port = 8080
 @baseUrl = {{host}}:{{port}}
 
-### 주문 생성 -> 결제
-### 주문 생성 -> 미결제 -> 주문 상태 변경
-### 프론트가 있어야하는 경우여서 따로 작성 하지 않음
 
 ### 주문 생성
-POST {{baseUrl}}/api/dealers/orders
+POST {{baseUrl}}/api/dealers/order
 Content-Type: application/json
 Authorization: Bearer {{token}} # 로그인에서 저장된 토큰 가져옴
 
@@ -16,15 +13,14 @@ Authorization: Bearer {{token}} # 로그인에서 저장된 토큰 가져옴
   "userEmail": "user01@example.com",
   "option": [
     1,
-    2,
-    4
+    2
   ],
   "modelId": 1,
   "address": "서울시 강남구..."
 }
 
 ### 주문 수정
-PATCH {{baseUrl}}/api/dealers/orders/2
+PATCH {{baseUrl}}/api/dealers/order/4
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -34,14 +30,14 @@ Authorization: Bearer {{token}}
 }
 
 ### 주문 단건조회
-GET {{baseUrl}}/api/orders/1
+GET {{baseUrl}}/api/order/4
 Authorization: Bearer {{token}}
 
 
 ### 주문 전체조회
-GET {{baseUrl}}/api/orders
+GET {{baseUrl}}/api/order
 Authorization: Bearer {{token}}
 
 ### 주문 삭제
-DELETE {{baseUrl}}/api/dealers/orders/1
+DELETE {{baseUrl}}/api/dealers/order/2
 Authorization: Bearer {{token}}
