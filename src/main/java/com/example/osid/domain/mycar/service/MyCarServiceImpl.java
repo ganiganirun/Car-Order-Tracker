@@ -11,10 +11,12 @@ import com.example.osid.common.auth.CustomUserDetails;
 import com.example.osid.domain.mycar.dto.MyCarListResponse;
 import com.example.osid.domain.mycar.dto.MyCarResponse;
 import com.example.osid.domain.mycar.entity.Mycar;
+import com.example.osid.domain.mycar.exception.MyCarErrorCode;
 import com.example.osid.domain.mycar.exception.MyCarException;
-import com.example.osid.domain.mycar.exception.MyCarlErrorCode;
 import com.example.osid.domain.mycar.repository.MycarRepository;
 import com.example.osid.domain.order.entity.Orders;
+import com.example.osid.domain.order.exception.OrderErrorCode;
+import com.example.osid.domain.order.exception.OrderException;
 import com.example.osid.domain.order.repository.OrderRepository;
 import com.example.osid.domain.user.repository.UserRepository;
 
@@ -57,18 +59,21 @@ public class MyCarServiceImpl implements MyCarService {
 		mycar.setDeletedAt();
 	}
 
-	// 매개변수 userId, orderId -> 후에 orders 로 변경?
 	@Override
 	@Transactional
 	public MyCarResponse saveMyCar(Long ordersId) {
 
 		Orders orders = orderRepository.findById(ordersId)
-			.orElseThrow(() -> new MyCarException(MyCarlErrorCode.MY_CAR_NOT_FOUND));
+			.orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
+		// // 완료된 주문이 아닐 경우
+		// if (!OrderStatus.COMPLETED.equals(orders.getOrderStatus())) {
+		// 	throw new MyCarException(MyCarErrorCode.ORDER_NOT_COMPLETED);
+		// }
 
 		// 이미 등록된 차량인 경우
 		boolean existsMyCar = mycarRepository.existsByOrdersId(ordersId);
 		if (existsMyCar) {
-			throw new MyCarException(MyCarlErrorCode.CAR_ALREADY_OWNED);
+			throw new MyCarException(MyCarErrorCode.CAR_ALREADY_OWNED);
 		}
 
 		Mycar mycar = new Mycar(orders);
@@ -79,13 +84,13 @@ public class MyCarServiceImpl implements MyCarService {
 	// myCar 조회시 없으면 예외출력
 	private Mycar findMyCarOrElseThrow(Long myCarId) {
 		return mycarRepository.findByIdAndDeletedAtIsNull(myCarId)
-			.orElseThrow(() -> new MyCarException(MyCarlErrorCode.MY_CAR_NOT_FOUND));
+			.orElseThrow(() -> new MyCarException(MyCarErrorCode.MY_CAR_NOT_FOUND));
 	}
 
 	// 로그인한 유저와 myCar 의 유저가 일지하는지 확인
 	private void validateMyCarOwner(Long userId, Long myCarUserId) {
 		if (!Objects.equals(myCarUserId, userId)) {
-			throw new MyCarException(MyCarlErrorCode.MY_CAR_NOT_OWED);
+			throw new MyCarException(MyCarErrorCode.MY_CAR_NOT_OWED);
 		}
 	}
 }
