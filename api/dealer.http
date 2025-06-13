@@ -1,0 +1,41 @@
+@host = http://localhost
+@port = 8080
+@baseUrl = {{host}}:{{port}}
+
+### Dealer 회원 가입
+POST {{baseUrl}}/api/dealers/signup
+Content-Type: application/json
+
+{
+  "email": "dealerA3@example.com",
+  "password": "12345678aA!",
+  "name": "현정근",
+  "phoneNumber": "010-1234-5685",
+  "masterEmail": "masterA@example.com"
+}
+
+
+### Dealer 정보 수정
+PATCH {{baseUrl}}/api/dealers/me
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "인텔리"
+}
+
+
+### Dealer 내 정보 조회
+GET {{baseUrl}}/api/dealers/me
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+
+### Dealer 회원 탈퇴
+DELETE {{baseUrl}}/api/dealers/me
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "password": "12345678aA!"
+}

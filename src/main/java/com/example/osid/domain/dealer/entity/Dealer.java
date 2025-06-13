@@ -47,6 +47,7 @@ public class Dealer extends BaseEntity {
 
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
+	@Builder.Default
 	private Branch branch = Branch.미배정; //지점
 
 	@Column(nullable = false)
@@ -54,6 +55,7 @@ public class Dealer extends BaseEntity {
 
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
+	@Builder.Default
 	private Role role = Role.APPLICANT; //역할
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -61,6 +63,7 @@ public class Dealer extends BaseEntity {
 	private Master master;
 
 	@Column(nullable = false)
+	@Builder.Default
 	private boolean isDeleted = false;
 
 	// null 허용: 삭제 전에는 null

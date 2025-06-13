@@ -36,14 +36,23 @@ public class UserService {
 
 		String encodedPassword = passwordEncoder.encode(userSignUpRequestDto.getPassword());
 
-		User user = new User(
-			userSignUpRequestDto.getEmail(),
-			encodedPassword,
-			userSignUpRequestDto.getName(),
-			userSignUpRequestDto.getDateOfBirth(),
-			userSignUpRequestDto.getPhoneNumber(),
-			userSignUpRequestDto.getAddress()
-		);
+		// User user = new User(
+		// 	userSignUpRequestDto.getEmail(),
+		// 	encodedPassword,
+		// 	userSignUpRequestDto.getName(),
+		// 	userSignUpRequestDto.getDateOfBirth(),
+		// 	userSignUpRequestDto.getPhoneNumber(),
+		// 	userSignUpRequestDto.getAddress()
+		// );
+
+		User user = User.builder()
+			.email(userSignUpRequestDto.getEmail())
+			.password(encodedPassword)
+			.name(userSignUpRequestDto.getName())
+			.dateOfBirth(userSignUpRequestDto.getDateOfBirth())
+			.phoneNumber(userSignUpRequestDto.getPhoneNumber())
+			.address(userSignUpRequestDto.getAddress())
+			.build();
 
 		userRepository.save(user);
 	}
