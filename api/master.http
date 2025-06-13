@@ -1,0 +1,72 @@
+@host = http://localhost
+@port = 8080
+@baseUrl = {{host}}:{{port}}
+
+### 마스터 회원 가입
+POST {{baseUrl}}/api/masters/signup
+Content-Type: application/json
+
+{
+  "businessNumber": "143-12-56855",
+  "name": "송가은",
+  "phoneNumber": "010-1234-5685",
+  "email": "masterD@example.com",
+  "password": "12345678aA!",
+  "address": "서울시 강남구",
+  "productKey": "d5z6qmPljaU7cK4hPOowjG8KU9GhSPHR"
+}
+
+
+### 마스터 정보 수정
+PATCH {{baseUrl}}/api/masters/me
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "현정근",
+  "phoneNumber": "010-5987-5987"
+}
+
+
+### 마스터 내 정보 조회
+GET {{baseUrl}}/api/masters/me
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+
+### 마스터 전체 조회
+GET {{baseUrl}}/api/masters
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+
+### 본인 속한 딜러 역할 변경
+PATCH {{baseUrl}}/api/dealers/role
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "dealerEmail": "dealerB1@example.com",
+  "role": "DEALER"
+}
+
+
+### 본인 속한 딜러 역할 변경
+PATCH {{baseUrl}}/api/dealers/branch
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "dealerEmail": "dealerB1@example.com",
+  "branch": "울산"
+}
+
+
+### 마스터 회원 탈퇴
+DELETE {{baseUrl}}/api/masters/me
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "password": "12345678aA!"
+}

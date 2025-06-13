@@ -1,7 +1,6 @@
 package com.example.osid.domain.dealer.dto.response;
 
 import com.example.osid.domain.dealer.enums.Branch;
-import com.example.osid.domain.master.entity.Master;
 
 import lombok.Getter;
 
@@ -13,7 +12,7 @@ public class FindByDealerResponseDto {
 	private String name;
 	private Branch branch;
 	private String phoneNumber;
-	private Master master;
+	private String masterEmail;
 
 	public FindByDealerResponseDto(
 		Long id,
@@ -21,13 +20,13 @@ public class FindByDealerResponseDto {
 		String name,
 		Branch branch,
 		String phoneNumber,
-		Master master
+		String masterEmail
 	) {
 		this.id = id;
 		this.email = email;
 		this.name = name;
 		this.branch = branch;
 		this.phoneNumber = phoneNumber;
-		this.master = master;
+		this.masterEmail = masterEmail;
 	}
 }

@@ -1,0 +1,42 @@
+@host = http://localhost
+@port = 8080
+@baseUrl = {{host}}:{{port}}
+
+### User 회원 가입
+POST {{baseUrl}}/api/users/signup
+Content-Type: application/json
+
+{
+  "email": "user04@example.com",
+  "password": "12345678aA!",
+  "name": "유재석",
+  "dateOfBirth": "1990-05-15",
+  "phoneNumber": "010-1234-5678",
+  "address": "1234 Main St, Anytown, ABC"
+}
+
+
+### User 정보 수정
+PATCH {{baseUrl}}/api/users/me
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "인텔리"
+}
+
+
+### User 내 정보 조회
+GET {{baseUrl}}/api/users/me
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+
+### User 회원 탈퇴
+DELETE {{baseUrl}}/api/users/me
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "password": "12345678aA!"
+}
