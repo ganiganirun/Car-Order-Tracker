@@ -90,7 +90,7 @@ public class Orders extends BaseEntity {
 		}
 	}
 
-	@OneToOne(fetch = FetchType.LAZY)
+	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name = "payment_id")
 	private Payments payments;
 
