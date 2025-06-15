@@ -33,6 +33,8 @@ public class SecurityConfig {
 				// 1) 모두 가능
 				.requestMatchers("/payment-test.html")
 				.permitAll()
+				.requestMatchers("/api/my-ml-predict")
+				.permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/auth/login")
 				.permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/users/signup")
