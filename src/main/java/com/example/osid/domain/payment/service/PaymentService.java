@@ -5,9 +5,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.osid.domain.order.dto.OrderPaidEvent;
 import com.example.osid.domain.order.entity.Orders;
 import com.example.osid.domain.order.enums.OrderStatus;
 import com.example.osid.domain.order.exception.OrderErrorCode;
@@ -39,6 +41,7 @@ public class PaymentService {
 	private final OrderRepository orderRepository;
 	private final PaymentRepository paymentRepository;
 	private final UserRepository userRepository;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Value("${IMP_API_KEY}")
 	private String apiKey;
@@ -87,6 +90,8 @@ public class PaymentService {
 		currentOrder.setOrderStatus(OrderStatus.COMPLETED);
 
 		savePayments.changePaymentBySuccess(PaymentStatus.PAID);
+
+		eventPublisher.publishEvent(new OrderPaidEvent(currentOrder.getId()));
 
 	}
 
