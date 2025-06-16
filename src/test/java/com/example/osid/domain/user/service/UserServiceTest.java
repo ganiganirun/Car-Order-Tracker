@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,10 +14,13 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.example.osid.common.auth.CustomUserDetails;
 import com.example.osid.common.auth.EmailValidator;
 import com.example.osid.domain.dealer.repository.DealerRepository;
 import com.example.osid.domain.master.repository.MasterRepository;
+import com.example.osid.domain.user.dto.request.UserDeletedRequestDto;
 import com.example.osid.domain.user.dto.request.UserSignUpRequestDto;
+import com.example.osid.domain.user.dto.request.UserUpdatedRequestDto;
 import com.example.osid.domain.user.entity.User;
 import com.example.osid.domain.user.repository.UserRepository;
 
@@ -76,14 +80,90 @@ class UserServiceTest {
 	}
 
 	@Test
-	void findbyUser() {
+	void findbyUser_success() {
+		// given: 로그인한 사용자 ID 설정
+		CustomUserDetails userDetails = mock(CustomUserDetails.class);
+		when(userDetails.getEmail()).thenReturn("user@example.com");
+
+		// given: 사용자 엔티티 모킹
+		User user = User.builder()
+			.id(1L)
+			.email("user@example.com")
+			.name("홍길동")
+			.password("encodedPwd")
+			.dateOfBirth(LocalDate.of(1995, 5, 20))
+			.phoneNumber("010-1111-2222")
+			.address("서울 강남구")
+			.build();
+		when(userRepository.findByEmailAndIsDeletedFalse("user@example.com"))
+			.thenReturn(Optional.of(user));
+
+		// when
+		var result = userService.findbyUser(userDetails);
+
+		// then
+		assertEquals(Long.valueOf(1L), result.getId());
+		assertEquals("user@example.com", result.getEmail());
+		assertEquals("홍길동", result.getName());
+		assertEquals(LocalDate.of(1995, 5, 20), result.getDateOfBirth());
+		assertEquals("010-1111-2222", result.getPhoneNumber());
+		assertEquals("서울 강남구", result.getAddress());
 	}
 
 	@Test
-	void updatedUser() {
+	void updatedUser_success() {
+		// given
+		CustomUserDetails userDetails = mock(CustomUserDetails.class);
+		when(userDetails.getId()).thenReturn(1L);
+
+		User user = User.builder()
+			.id(1L)
+			.name("Old Name")
+			.phoneNumber("010-0000-0000")
+			.address("Old Address")
+			.build();
+		when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+		UserUpdatedRequestDto dto = mock(UserUpdatedRequestDto.class);
+		when(dto.getName()).thenReturn("New Name");
+		when(dto.getPhoneNumber()).thenReturn("010-9999-9999");
+		when(dto.getAddress()).thenReturn(null); // 주소는 변경 안함
+
+		// when
+		userService.updatedUser(userDetails, dto);
+
+		// then
+		assertEquals("New Name", user.getName());
+		assertEquals("010-9999-9999", user.getPhoneNumber());
+		assertEquals("Old Address", user.getAddress());
 	}
 
 	@Test
-	void deletedUser() {
+	void deletedUser_success() {
+		// given
+		CustomUserDetails userDetails = mock(CustomUserDetails.class);
+		when(userDetails.getEmail()).thenReturn("user@example.com");
+
+		User user = User.builder()
+			.id(1L)
+			.email("user@example.com")
+			.password("encodedPwd")
+			.isDeleted(false)
+			.build();
+		when(userRepository.findByEmailAndIsDeletedFalse("user@example.com"))
+			.thenReturn(Optional.of(user));
+
+		when(passwordEncoder.matches("Password1!", "encodedPwd")).thenReturn(true);
+
+		UserDeletedRequestDto dto = mock(UserDeletedRequestDto.class);
+		when(dto.getPassword()).thenReturn("Password1!");
+
+		// when
+		userService.deletedUser(userDetails, dto);
+
+		// then
+		assertTrue(user.isDeleted());
+		assertNotNull(user.getDeletedAt());
 	}
+
 }

@@ -13,9 +13,16 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.example.osid.common.auth.CustomUserDetails;
 import com.example.osid.common.auth.EmailValidator;
+import com.example.osid.common.entity.enums.Role;
+import com.example.osid.domain.dealer.dto.request.DealerDeletedRequestDto;
+import com.example.osid.domain.dealer.dto.request.DealerRoleChangeRequestDto;
 import com.example.osid.domain.dealer.dto.request.DealerSignUpRequestDto;
+import com.example.osid.domain.dealer.dto.request.DealerUpdatedRequestDto;
 import com.example.osid.domain.dealer.entity.Dealer;
+import com.example.osid.domain.dealer.exception.DealerErrorCode;
+import com.example.osid.domain.dealer.exception.DealerException;
 import com.example.osid.domain.dealer.repository.DealerRepository;
 import com.example.osid.domain.master.entity.Master;
 import com.example.osid.domain.master.exception.MasterErrorCode;
@@ -102,19 +109,174 @@ class DealerServiceTest {
 	}
 
 	@Test
-	void findByDealer() {
+	void findByDealer_success() {
+		// given
+		CustomUserDetails userDetails = mock(CustomUserDetails.class);
+		when(userDetails.getId()).thenReturn(1L);
+
+		Master master = Master.builder()
+			.id(1L)
+			.email("master@example.com")
+			.build();
+
+		Dealer dealer = Dealer.builder()
+			.id(1L)
+			.email("dealer@example.com")
+			.name("홍길동")
+			.phoneNumber("010-1234-5678")
+			.branch(com.example.osid.domain.dealer.enums.Branch.서울)
+			.master(master)
+			.build();
+
+		when(dealerRepository.findById(1L)).thenReturn(Optional.of(dealer));
+
+		// when
+		var result = dealerService.findByDealer(userDetails);
+
+		// then
+		assertEquals(Long.valueOf(1L), result.getId());
+		assertEquals("dealer@example.com", result.getEmail());
+		assertEquals("홍길동", result.getName());
+		assertEquals("010-1234-5678", result.getPhoneNumber());
+		assertEquals("master@example.com", result.getMasterEmail());
+		assertEquals(com.example.osid.domain.dealer.enums.Branch.서울, result.getBranch());
 	}
 
 	@Test
-	void updatedDealer() {
+	void updatedDealer_success() {
+		// given
+		CustomUserDetails userDetails = mock(CustomUserDetails.class);
+		when(userDetails.getEmail()).thenReturn("dealer@example.com");
+
+		Dealer dealer = Dealer.builder()
+			.id(1L)
+			.email("dealer@example.com")
+			.name("Old Name")
+			.phoneNumber("010-0000-0000")
+			.master(Master.builder().id(1L).build())
+			.build();
+
+		when(dealerRepository.findByEmailAndIsDeletedFalse("dealer@example.com"))
+			.thenReturn(Optional.of(dealer));
+
+		DealerUpdatedRequestDto dto = mock(DealerUpdatedRequestDto.class);
+		when(dto.getName()).thenReturn("New Name");
+		when(dto.getPhoneNumber()).thenReturn("010-9999-9999");
+
+		// when
+		dealerService.updatedDealer(userDetails, dto);
+
+		// then
+		assertEquals("New Name", dealer.getName());
+		assertEquals("010-9999-9999", dealer.getPhoneNumber());
 	}
 
 	@Test
-	void deletedDealer() {
+	void deletedDealer_success() {
+		// given
+		CustomUserDetails userDetails = mock(CustomUserDetails.class);
+		when(userDetails.getEmail()).thenReturn("dealer@example.com");
+
+		Dealer dealer = Dealer.builder()
+			.id(1L)
+			.email("dealer@example.com")
+			.password("encodedPwd")
+			.isDeleted(false)
+			.master(Master.builder().id(1L).build())
+			.build();
+
+		when(dealerRepository.findByEmailAndIsDeletedFalse("dealer@example.com"))
+			.thenReturn(Optional.of(dealer));
+
+		when(passwordEncoder.matches("Password1!", "encodedPwd")).thenReturn(true);
+
+		DealerDeletedRequestDto dto = mock(DealerDeletedRequestDto.class);
+		when(dto.getPassword()).thenReturn("Password1!");
+
+		// when
+		dealerService.deletedDealer(userDetails, dto);
+
+		// then
+		assertTrue(dealer.isDeleted());
+		assertNotNull(dealer.getDeletedAt());
 	}
 
 	@Test
-	void updatedRoleChangeDealer() {
+	void updatedRoleChangeDealer_success() {
+		// given: 로그인한 마스터 (CustomUserDetails)
+		CustomUserDetails masterDetails = mock(CustomUserDetails.class);
+		when(masterDetails.getEmail()).thenReturn("master@example.com");
+
+		// given: 마스터 엔티티
+		Master master = Master.builder()
+			.id(100L)
+			.email("master@example.com")
+			.build();
+		when(masterRepository.findByEmailAndIsDeletedFalse("master@example.com"))
+			.thenReturn(Optional.of(master));
+
+		// given: 해당 마스터에 소속된 딜러
+		Dealer dealer = Dealer.builder()
+			.id(200L)
+			.email("dealer@example.com")
+			.name("홍길동")
+			.role(Role.APPLICANT)
+			.master(master) // 마스터에 속해 있어야 함
+			.build();
+		when(dealerRepository.findByEmailAndIsDeletedFalse("dealer@example.com"))
+			.thenReturn(Optional.of(dealer));
+
+		// given: 역할 변경 요청 DTO
+		DealerRoleChangeRequestDto dto = mock(DealerRoleChangeRequestDto.class);
+		when(dto.getDealerEmail()).thenReturn("dealer@example.com");
+		when(dto.getRole()).thenReturn(Role.DEALER); // 유효한 Role
+
+		// when
+		dealerService.updatedRoleChangeDealer(masterDetails, dto);
+
+		// then
+		assertEquals(Role.DEALER, dealer.getRole()); // 역할이 변경되었는지 확인
+	}
+
+	@Test
+	void updatedRoleChangeDealer_fail_notBelongToMaster() {
+		// given: 로그인한 마스터 (CustomUserDetails)
+		CustomUserDetails masterDetails = mock(CustomUserDetails.class);
+		when(masterDetails.getEmail()).thenReturn("masterA@example.com");
+
+		// given: 실제 로그인한 마스터
+		Master masterA = Master.builder()
+			.id(1L)
+			.email("masterA@example.com")
+			.build();
+		when(masterRepository.findByEmailAndIsDeletedFalse("masterA@example.com"))
+			.thenReturn(Optional.of(masterA));
+
+		// given: 딜러는 마스터 B 소속
+		Master masterB = Master.builder()
+			.id(2L)
+			.email("masterB@example.com")
+			.build();
+		Dealer dealer = Dealer.builder()
+			.id(10L)
+			.email("dealer@example.com")
+			.name("딜러1")
+			.role(Role.APPLICANT)
+			.master(masterB) // 다른 마스터에 소속
+			.build();
+		when(dealerRepository.findByEmailAndIsDeletedFalse("dealer@example.com"))
+			.thenReturn(Optional.of(dealer));
+
+		// given: 역할 변경 요청
+		DealerRoleChangeRequestDto dto = mock(DealerRoleChangeRequestDto.class);
+		when(dto.getDealerEmail()).thenReturn("dealer@example.com");
+		when(dto.getRole()).thenReturn(Role.DEALER);
+
+		// when & then: 예외 발생 검증
+		DealerException ex = assertThrows(DealerException.class,
+			() -> dealerService.updatedRoleChangeDealer(masterDetails, dto));
+
+		assertEquals(DealerErrorCode.DEALER_NOT_BELONG_TO_MASTER, ex.getBaseCode());
 	}
 
 	@Test
