@@ -8,7 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.osid.config.RabbitMQConfig;
-import com.example.osid.event.OrderCompletedEvent;
+import com.example.osid.event.OrderCompletedEmailEvent;
+import com.example.osid.event.OrderCompletedMyCarEvent;
 import com.example.osid.event.dto.FailedEventResponse;
 import com.example.osid.event.entity.FailedEvent;
 import com.example.osid.event.exception.FailedEventException;
@@ -38,20 +39,40 @@ public class FailedEventService {
 	@Transactional
 	@PreAuthorize("hasRole('MASTER')")
 	public String retryFailedEvent(Long failedEventId) {
-		FailedEvent failed = failedEventRepository.findById(failedEventId)
+		FailedEvent failedEvent = failedEventRepository.findById(failedEventId)
 			.orElseThrow(() -> new FailedEventException(FaliedEventErrorCode.EVENT_NOT_FOUND));
 
 		// 이벤트 재구성 (retryCount 초기화)
-		OrderCompletedEvent retryEvent = new OrderCompletedEvent(
-			failed.getOrderId(),
+		switch (failedEvent.getEventType()) {
+			case MY_CAR -> resendMyCarEvent(failedEvent);
+			case EMAIL -> resendEmailEvent(failedEvent);
+			default -> throw new FailedEventException(FaliedEventErrorCode.EVENT_TYPE_NOT_EXIST);
+		}
+
+		// 재처리 성공 시 실패 이벤트 삭제
+		failedEventRepository.delete(failedEvent);
+		return "OK";
+
+	}
+
+	private void resendMyCarEvent(FailedEvent failedEvent) {
+		OrderCompletedMyCarEvent retryEvent = new OrderCompletedMyCarEvent(
+			failedEvent.getOrderId(),
 			null,
 			0
 		);
+		rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.MY_CAR_ROUTING_KEY, retryEvent);
+		log.info("MyCar 재처리 전송: orderId={}", failedEvent.getOrderId());
+	}
 
-		// MQ 재전송
-		rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY, retryEvent);
-
-		return "OK";
+	private void resendEmailEvent(FailedEvent failedEvent) {
+		OrderCompletedEmailEvent retryEvent = new OrderCompletedEmailEvent(
+			failedEvent.getOrderId(),
+			null,
+			0
+		);
+		rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.EMAIL_ROUTING_KEY, retryEvent);
+		log.info("Email 재처리 전송: orderId={}", failedEvent.getOrderId());
 	}
 
 }
