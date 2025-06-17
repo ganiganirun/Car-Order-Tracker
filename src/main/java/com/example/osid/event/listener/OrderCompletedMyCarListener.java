@@ -36,6 +36,7 @@ public class OrderCompletedMyCarListener {
 		try {
 			myCarService.saveMyCar(event.getOrderId());
 			log.info("MyCar 저장 성공, orderId={}", event.getOrderId());
+			publishEmailEvent(event.getOrderId());
 
 		} catch (MyCarException | OrderException e) {
 			// 비즈니스 로직 예외는 바로 DLQ 전송 (MyCarException, OrderException)
