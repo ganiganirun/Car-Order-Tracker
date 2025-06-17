@@ -54,9 +54,10 @@ public class FailedEvent extends BaseEntity {
 		this.eventType = FailedEventType.EMAIL;
 	}
 
-	public FailedEvent(Long orderId, int retryCount, String errorMessage) {
+	public FailedEvent(Long orderId, int retryCount, String errorMessage, FailedEventType failedEventType) {
 		this.orderId = orderId;
 		this.retryCount = retryCount;
 		this.errorMessage = errorMessage;
+		this.eventType = failedEventType;
 	}
 }
