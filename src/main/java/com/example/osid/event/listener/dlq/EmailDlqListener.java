@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import com.example.osid.config.RabbitMQConfig;
-import com.example.osid.event.OrderCompletedMyCarEvent;
+import com.example.osid.event.OrderCompletedEmailEvent;
 import com.example.osid.event.entity.FailedEvent;
 import com.example.osid.event.repository.FailedEventRepository;
 
@@ -21,7 +21,7 @@ public class EmailDlqListener {
 	private final FailedEventRepository failedEventRepository;
 
 	@RabbitListener(queues = RabbitMQConfig.EMAIL_DLQ)
-	public void handleDlq(OrderCompletedMyCarEvent event) {
+	public void handleDlq(OrderCompletedEmailEvent event) {
 		log.warn("EMAIL_DLQ 메시지 수신: orderId={}, retryCount={}, error={}",
 			event.getOrderId(), event.getRetryCount(), event.getErrorMessage());
 
