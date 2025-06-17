@@ -2,9 +2,9 @@ package com.example.osid.config;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
-import org.springframework.amqp.core.TopicExchange;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,33 +15,35 @@ public class RabbitMQConfig {
 
 	// Main Exchange
 	public static final String EXCHANGE = "order.exchange";
-	public static final String ROUTING_KEY = "order.completed";
+	// public static final String ROUTING_KEY = "order.completed";
 
 	// MyCar & DLQ
-	public static final String MY_CAR_QUEUE = "order.completed.mycar.queue";
-	public static final String MY_CAR_DLQ = "order.completed.mycar.dlq.queue";
-	public static final String MY_CAR_DLX = "dlx.mycar.exchange";
-	public static final String MY_CAR_DLQ_ROUTING_KEY = "order.completed.mycar.dlq";
+	public static final String MY_CAR_QUEUE = "order.completed.myCar.queue";
+	public static final String MY_CAR_ROUTING_KEY = "order.completed.myCar";
+	public static final String MY_CAR_DLQ = "order.completed.myCar.dlq.queue";
+	public static final String MY_CAR_DLX = "dlx.myCar.exchange";
+	public static final String MY_CAR_DLQ_ROUTING_KEY = "order.completed.myCar.dlq";
 
 	// Email & DLQ
 	public static final String EMAIL_QUEUE = "order.completed.email.queue";
+	public static final String EMAIL_ROUTING_KEY = "order.completed.email";
 	public static final String EMAIL_DLQ = "order.completed.email.dlq.queue";
 	public static final String EMAIL_DLX = "dlx.email.exchange";
 	public static final String EMAIL_DLQ_ROUTING_KEY = "order.completed.email.dlq";
 
 	@Bean
-	public TopicExchange orderExchange() {
-		return new TopicExchange(EXCHANGE);
+	public DirectExchange orderExchange() {
+		return new DirectExchange(EXCHANGE);
 	}
 
 	@Bean
-	public TopicExchange myCarDlxExchange() {
-		return new TopicExchange(MY_CAR_DLX);
+	public DirectExchange myCarDlxExchange() {
+		return new DirectExchange(MY_CAR_DLX);
 	}
 
 	@Bean
-	public TopicExchange emailDlxExchange() {
-		return new TopicExchange(EMAIL_DLX);
+	public DirectExchange emailDlxExchange() {
+		return new DirectExchange(EMAIL_DLX);
 	}
 
 	// 주문 완료 처리용
@@ -79,7 +81,7 @@ public class RabbitMQConfig {
 		return BindingBuilder
 			.bind(mycarQueue())
 			.to(orderExchange())
-			.with(ROUTING_KEY);
+			.with(MY_CAR_ROUTING_KEY);
 	}
 
 	@Bean
@@ -87,7 +89,7 @@ public class RabbitMQConfig {
 		return BindingBuilder
 			.bind(emailQueue())
 			.to(orderExchange())
-			.with(ROUTING_KEY);
+			.with(EMAIL_ROUTING_KEY);
 	}
 
 	@Bean

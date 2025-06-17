@@ -49,7 +49,7 @@ public class OrderCompletedEmailListener {
 
 	private void resendToQueue(OrderCompletedEmailEvent event) {
 		log.info("이메일 재시도 메시지 전송: orderId={}, retryCount={}", event.getOrderId(), event.getRetryCount());
-		rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY, event);
+		rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.EMAIL_ROUTING_KEY, event);
 	}
 
 	private void sendToDlq(OrderCompletedEmailEvent event) {

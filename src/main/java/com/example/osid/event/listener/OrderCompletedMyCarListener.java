@@ -60,7 +60,7 @@ public class OrderCompletedMyCarListener {
 
 	private void resendToQueue(OrderCompletedMyCarEvent event) {
 		log.info("재시도 메시지 전송: orderId={}, retryCount={}", event.getOrderId(), event.getRetryCount());
-		rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY, event);
+		rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.MY_CAR_ROUTING_KEY, event);
 	}
 
 	private void sendToDlq(OrderCompletedMyCarEvent event) {
@@ -75,7 +75,7 @@ public class OrderCompletedMyCarListener {
 
 	private void publishEmailEvent(Long orderId) {
 		OrderCompletedEmailEvent emailEvent = new OrderCompletedEmailEvent(orderId);
-		rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY, emailEvent);
+		rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.EMAIL_ROUTING_KEY, emailEvent);
 		log.info("이메일 전송 성공: orderId={}", orderId);
 	}
 }

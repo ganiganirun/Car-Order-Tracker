@@ -24,7 +24,7 @@ public class OrderEventPublisher {
 				public void afterCommit() {
 					rabbitTemplate.convertAndSend(
 						RabbitMQConfig.EXCHANGE,
-						RabbitMQConfig.ROUTING_KEY,
+						RabbitMQConfig.MY_CAR_ROUTING_KEY,
 						event
 					);
 				}
