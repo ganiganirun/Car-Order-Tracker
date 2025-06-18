@@ -12,8 +12,8 @@ import com.example.osid.event.OrderCompletedEmailEvent;
 import com.example.osid.event.OrderCompletedMyCarEvent;
 import com.example.osid.event.dto.FailedEventResponse;
 import com.example.osid.event.entity.FailedEvent;
+import com.example.osid.event.exception.FailedEventErrorCode;
 import com.example.osid.event.exception.FailedEventException;
-import com.example.osid.event.exception.FaliedEventErrorCode;
 import com.example.osid.event.repository.FailedEventRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -40,13 +40,13 @@ public class FailedEventService {
 	@PreAuthorize("hasRole('MASTER')")
 	public String retryFailedEvent(Long failedEventId) {
 		FailedEvent failedEvent = failedEventRepository.findById(failedEventId)
-			.orElseThrow(() -> new FailedEventException(FaliedEventErrorCode.EVENT_NOT_FOUND));
+			.orElseThrow(() -> new FailedEventException(FailedEventErrorCode.EVENT_NOT_FOUND));
 
 		// 이벤트 재구성 (retryCount 초기화)
 		switch (failedEvent.getEventType()) {
 			case MY_CAR -> resendMyCarEvent(failedEvent);
 			case EMAIL -> resendEmailEvent(failedEvent);
-			default -> throw new FailedEventException(FaliedEventErrorCode.EVENT_TYPE_NOT_EXIST);
+			default -> throw new FailedEventException(FailedEventErrorCode.EVENT_TYPE_NOT_EXIST);
 		}
 
 		// 재처리 성공 시 실패 이벤트 삭제
