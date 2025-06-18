@@ -2,9 +2,9 @@ package com.example.osid.config;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
-import org.springframework.amqp.core.TopicExchange;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,57 +13,98 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(name = "mq.enabled", havingValue = "true", matchIfMissing = false)
 public class RabbitMQConfig {
 
-	// 주문 완료 Queue
+	// Main Exchange
 	public static final String EXCHANGE = "order.exchange";
-	public static final String ORDER_COMPLETE_QUEUE = "order.completed.queue";
-	public static final String ROUTING_KEY = "order.completed";
-	// DLQ Queue (실패 처리용)
-	public static final String DLQ_QUEUE = "order.completed.dlq.queue";
-	public static final String DLQ_ROUTING_KEY = "order.completed.dlq";
-	public static final String DLX_EXCHANGE = "dlx.exchange";
+	// public static final String ROUTING_KEY = "order.completed";
+
+	// MyCar & DLQ
+	public static final String MY_CAR_QUEUE = "order.completed.myCar.queue";
+	public static final String MY_CAR_ROUTING_KEY = "order.completed.myCar";
+	public static final String MY_CAR_DLQ = "order.completed.myCar.dlq.queue";
+	public static final String MY_CAR_DLX = "dlx.myCar.exchange";
+	public static final String MY_CAR_DLQ_ROUTING_KEY = "order.completed.myCar.dlq";
+
+	// Email & DLQ
+	public static final String EMAIL_QUEUE = "order.completed.email.queue";
+	public static final String EMAIL_ROUTING_KEY = "order.completed.email";
+	public static final String EMAIL_DLQ = "order.completed.email.dlq.queue";
+	public static final String EMAIL_DLX = "dlx.email.exchange";
+	public static final String EMAIL_DLQ_ROUTING_KEY = "order.completed.email.dlq";
 
 	@Bean
-	public TopicExchange orderExchange() {
-		return new TopicExchange(EXCHANGE);
+	public DirectExchange orderExchange() {
+		return new DirectExchange(EXCHANGE);
 	}
 
-	// DLQ Exchange (실패 처리용)
 	@Bean
-	public TopicExchange dlxExchange() {
-		return new TopicExchange(DLX_EXCHANGE);
+	public DirectExchange myCarDlxExchange() {
+		return new DirectExchange(MY_CAR_DLX);
+	}
+
+	@Bean
+	public DirectExchange emailDlxExchange() {
+		return new DirectExchange(EMAIL_DLX);
 	}
 
 	// 주문 완료 처리용
+	//내 차 생성
 	@Bean
-	public Queue orderCompletedQueue() {
-		return QueueBuilder.durable(ORDER_COMPLETE_QUEUE)
-			// 메시지 처리 실패 시
-			.withArgument("x-dead-letter-exchange", DLX_EXCHANGE)
-			.withArgument("x-dead-letter-routing-key", DLQ_ROUTING_KEY)
+	public Queue mycarQueue() {
+		return QueueBuilder.durable(MY_CAR_QUEUE)
+			.withArgument("x-dead-letter-exchange", MY_CAR_DLX)
+			.withArgument("x-dead-letter-routing-key", MY_CAR_DLQ_ROUTING_KEY)
 			.build();
 	}
 
-	// DLQ 메시지를 저장(재처리 용도)
+	// 출고 메일 발송
 	@Bean
-	public Queue orderCompletedDlqQueue() {
-		return QueueBuilder.durable(DLQ_QUEUE).build();
+	public Queue emailQueue() {
+		return QueueBuilder.durable(EMAIL_QUEUE)
+			.withArgument("x-dead-letter-exchange", EMAIL_DLX)
+			.withArgument("x-dead-letter-routing-key", EMAIL_DLQ_ROUTING_KEY)
+			.build();
 	}
 
-	// 메인 큐 - 메인 익스체인지 연결 (order.completed)
+	// DLQ
 	@Bean
-	public Binding orderCompletedBinding() {
+	public Queue mycarDlqQueue() {
+		return QueueBuilder.durable(MY_CAR_DLQ).build();
+	}
+
+	@Bean
+	public Queue emailDlqQueue() {
+		return QueueBuilder.durable(EMAIL_DLQ).build();
+	}
+
+	@Bean
+	public Binding mycarBinding() {
 		return BindingBuilder
-			.bind(orderCompletedQueue())
+			.bind(mycarQueue())
 			.to(orderExchange())
-			.with(ROUTING_KEY);
+			.with(MY_CAR_ROUTING_KEY);
 	}
 
-	//  DLQ 큐 - DLX 익스체인지 연결 (order.completed.dlq)
 	@Bean
-	public Binding dlqBinding() {
+	public Binding emailBinding() {
 		return BindingBuilder
-			.bind(orderCompletedDlqQueue())
-			.to(dlxExchange())
-			.with(DLQ_ROUTING_KEY);
+			.bind(emailQueue())
+			.to(orderExchange())
+			.with(EMAIL_ROUTING_KEY);
+	}
+
+	@Bean
+	public Binding mycarDlqBinding() {
+		return BindingBuilder
+			.bind(mycarDlqQueue())
+			.to(myCarDlxExchange())
+			.with(MY_CAR_DLQ_ROUTING_KEY);
+	}
+
+	@Bean
+	public Binding emailDlqBinding() {
+		return BindingBuilder
+			.bind(emailDlqQueue())
+			.to(emailDlxExchange())
+			.with(EMAIL_DLQ_ROUTING_KEY);
 	}
 }
