@@ -76,6 +76,6 @@ public class OrderCompletedMyCarListener {
 	private void publishEmailEvent(Long orderId) {
 		OrderCompletedEmailEvent emailEvent = new OrderCompletedEmailEvent(orderId);
 		rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.EMAIL_ROUTING_KEY, emailEvent);
-		log.info("이메일 전송 성공: orderId={}", orderId);
+		log.info("이메일 이벤트 발행 : orderId={}", orderId);
 	}
 }
