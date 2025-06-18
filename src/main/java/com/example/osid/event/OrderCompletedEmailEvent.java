@@ -1,7 +1,5 @@
 package com.example.osid.event;
 
-import java.io.Serializable;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,15 +9,15 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderCompletedEvent implements Serializable {
+public class OrderCompletedEmailEvent {
 
 	// orderId, (실패했을 경우)에러 메세지, 재시도 횟수
 	private Long orderId;
 	private String errorMessage;
 	private int retryCount;
 
-	public OrderCompletedEvent(Long orderId) {
+	public OrderCompletedEmailEvent(Long orderId) {
 		this.orderId = orderId;
 	}
-	
+
 }

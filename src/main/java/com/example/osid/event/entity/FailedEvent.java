@@ -1,10 +1,14 @@
 package com.example.osid.event.entity;
 
 import com.example.osid.common.entity.BaseEntity;
-import com.example.osid.event.OrderCompletedEvent;
+import com.example.osid.event.OrderCompletedEmailEvent;
+import com.example.osid.event.OrderCompletedMyCarEvent;
+import com.example.osid.event.enums.FailedEventType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -31,15 +35,29 @@ public class FailedEvent extends BaseEntity {
 	@Column(name = "error_message", length = 5000)
 	private String errorMessage;
 
-	public FailedEvent(OrderCompletedEvent event) {
+	@Enumerated(EnumType.STRING)
+	private FailedEventType eventType;
+
+	// myCar failedEvent
+	public FailedEvent(OrderCompletedMyCarEvent event) {
 		this.orderId = event.getOrderId();
 		this.retryCount = event.getRetryCount();
 		this.errorMessage = event.getErrorMessage();
+		this.eventType = FailedEventType.MY_CAR;
 	}
 
-	public FailedEvent(Long orderId, int retryCount, String errorMessage) {
+	// 이메일 failedEvent
+	public FailedEvent(OrderCompletedEmailEvent event) {
+		this.orderId = event.getOrderId();
+		this.retryCount = event.getRetryCount();
+		this.errorMessage = event.getErrorMessage();
+		this.eventType = FailedEventType.EMAIL;
+	}
+
+	public FailedEvent(Long orderId, int retryCount, String errorMessage, FailedEventType failedEventType) {
 		this.orderId = orderId;
 		this.retryCount = retryCount;
 		this.errorMessage = errorMessage;
+		this.eventType = failedEventType;
 	}
 }

@@ -9,8 +9,9 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum FaliedEventErrorCode implements BaseCode {
-	EVENT_NOT_FOUND(HttpStatus.NOT_FOUND, "EVENT_001", "이벤트를 찾을 수 없습니다.");
+public enum FailedEventErrorCode implements BaseCode {
+	EVENT_NOT_FOUND(HttpStatus.NOT_FOUND, "EVENT_001", "이벤트를 찾을 수 없습니다."),
+	EVENT_TYPE_NOT_EXIST(HttpStatus.NOT_FOUND, "EVENT_002", "존재하지 않는 이벤트 타입입니다.");
 
 	private final HttpStatus httpStatus;
 	private final String code;
