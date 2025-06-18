@@ -45,13 +45,14 @@ public class DealerService {
 
 		String encodedPassword = passwordEncoder.encode(dealerSignUpRequestDto.getPassword());
 
-		Dealer dealer = new Dealer(
-			dealerSignUpRequestDto.getEmail(),
-			encodedPassword,
-			dealerSignUpRequestDto.getName(),
-			dealerSignUpRequestDto.getPhoneNumber(),
-			master
-		);
+		Dealer dealer = Dealer.builder()
+			.email(dealerSignUpRequestDto.getEmail())
+			.password(encodedPassword)
+			.name(dealerSignUpRequestDto.getName())
+			.phoneNumber(dealerSignUpRequestDto.getPhoneNumber())
+			.master(master)
+			.build();        // @Builder.Default가 적용되어 branch=미배정, role=APPLICANT, isDeleted=false 자동 세팅
+
 		dealerRepository.save(dealer);
 	}
 
@@ -65,7 +66,7 @@ public class DealerService {
 			dealer.getName(),
 			dealer.getBranch(),
 			dealer.getPhoneNumber(),
-			dealer.getMaster()
+			dealer.getMaster().getEmail()
 		);
 	}
 

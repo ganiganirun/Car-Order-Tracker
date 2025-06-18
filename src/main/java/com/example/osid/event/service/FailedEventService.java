@@ -11,6 +11,8 @@ import com.example.osid.config.RabbitMQConfig;
 import com.example.osid.event.OrderCompletedEvent;
 import com.example.osid.event.dto.FailedEventResponse;
 import com.example.osid.event.entity.FailedEvent;
+import com.example.osid.event.exception.FailedEventException;
+import com.example.osid.event.exception.FaliedEventErrorCode;
 import com.example.osid.event.repository.FailedEventRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -37,7 +39,7 @@ public class FailedEventService {
 	@PreAuthorize("hasRole('MASTER')")
 	public String retryFailedEvent(Long failedEventId) {
 		FailedEvent failed = failedEventRepository.findById(failedEventId)
-			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 실패 이벤트입니다."));
+			.orElseThrow(() -> new FailedEventException(FaliedEventErrorCode.EVENT_NOT_FOUND));
 
 		// 이벤트 재구성 (retryCount 초기화)
 		OrderCompletedEvent retryEvent = new OrderCompletedEvent(

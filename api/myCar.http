@@ -1,0 +1,27 @@
+### 환경 변수
+@host = http://localhost
+@port = 8080
+@baseUrl = {{host}}:{{port}}
+
+### myCar 단건 조회
+GET {{baseUrl}}/api/myCar/1
+Authorization: Bearer {{token}}
+
+
+### myCar 전체 조회
+GET {{baseUrl}}/api/myCar
+Authorization: Bearer {{token}}
+
+
+### myCar 삭제
+DELETE {{baseUrl}}/api/myCar/1
+Authorization: Bearer {{token}} # 로그인에서 저장된 토큰 가져옴
+
+
+### myCar 단건 조회 실패 - 삭제된 차량 혹은 존재하지 않는 차량
+GET {{baseUrl}}/api/myCar/1
+Authorization: Bearer {{token}}
+
+### myCar 단건 조회 실패 - 유저의 차량이 아님
+GET {{baseUrl}}/api/myCar/4
+Authorization: Bearer {{token}}

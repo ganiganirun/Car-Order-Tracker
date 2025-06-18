@@ -1,0 +1,12 @@
+### 환경 변수
+@host = http://localhost
+@port = 8080
+@baseUrl = {{host}}:{{port}}
+
+### 실패 이벤트 조회
+GET {{baseUrl}}/api/masters/failedEvent
+Authorization: Bearer {{token}} # 로그인에서 저장된 토큰 가져옴
+
+### 실패 이벤트 재실행
+POST {{baseUrl}}/api/masters/failedEvent/1
+Authorization: Bearer {{token}} # 로그인에서 저장된 토큰 가져옴

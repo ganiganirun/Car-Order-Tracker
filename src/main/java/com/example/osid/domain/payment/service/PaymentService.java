@@ -8,16 +8,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.osid.common.exception.CustomException;
-import com.example.osid.common.exception.ErrorCode;
 import com.example.osid.domain.order.entity.Orders;
 import com.example.osid.domain.order.enums.OrderStatus;
+import com.example.osid.domain.order.exception.OrderErrorCode;
+import com.example.osid.domain.order.exception.OrderException;
 import com.example.osid.domain.order.repository.OrderRepository;
 import com.example.osid.domain.payment.dto.PaymentRequestDto;
 import com.example.osid.domain.payment.entity.Payments;
 import com.example.osid.domain.payment.enums.PaymentStatus;
+import com.example.osid.domain.payment.exception.PaymentErrorCode;
+import com.example.osid.domain.payment.exception.PaymentException;
 import com.example.osid.domain.payment.repository.PaymentRepository;
 import com.example.osid.domain.user.entity.User;
+import com.example.osid.domain.user.exception.UserErrorCode;
+import com.example.osid.domain.user.exception.UserException;
 import com.example.osid.domain.user.repository.UserRepository;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
@@ -64,14 +68,15 @@ public class PaymentService {
 
 		// orders 테이블에서 오더 상태 변화
 		Orders currentOrder = orderRepository.findByMerchantUid(merchantUid)
-			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
+			.orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
 
 		// Payment 테이블에 저장할 User 객체
 		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE));
+			.orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
 		// 주문한 상품들에 대해 각각 결제내역 저장
-		Payments savePayments = createPaymentHistory(currentOrder, user, totalPrice, PaymentStatus.READY, impUid);
+		Payments savePayments = createPaymentHistory(user, totalPrice, PaymentStatus.READY, impUid);
+		currentOrder.setPayments(savePayments);
 
 		// 1차 검증
 		validatedAmount(totalPrice, iamportPayment.getAmount().longValue(), payment, savePayments);
@@ -86,9 +91,9 @@ public class PaymentService {
 	}
 
 	// 결제내역 테이블 저장하는 메서드
-	private Payments createPaymentHistory(Orders order, User user, Long totalPrice, PaymentStatus paymentStatus,
+	private Payments createPaymentHistory(User user, Long totalPrice, PaymentStatus paymentStatus,
 		String impUid) {
-		Payments payments = new Payments(user, order, totalPrice, impUid, paymentStatus, LocalDate.now());
+		Payments payments = new Payments(user, totalPrice, impUid, paymentStatus, LocalDate.now());
 		Payments savePayments = paymentRepository.save(payments);
 
 		return savePayments;
@@ -104,23 +109,30 @@ public class PaymentService {
 
 			iamportClient.cancelPaymentByImpUid(cancelData);
 
-			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
+			throw new PaymentException(PaymentErrorCode.PAYMENT_AMOUNT_MISMATCH);
 		}
 	}
 
+	@Transactional
 	public void cancelReservation(PaymentRequestDto.Cancel cancelReq) throws IamportResponseException, IOException {
-		IamportResponse<Payment> response = iamportClient.paymentByImpUid(cancelReq.getImpUid());
+
+		Orders currentOrder = orderRepository.findByMerchantUid(cancelReq.getMerchantUid())
+			.orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
+
+		IamportResponse<Payment> response = iamportClient.paymentByImpUid(currentOrder.getPayments().getImpUid());
 
 		//cancelData 생성
 		CancelData cancelData = createCancelData(response, cancelReq.getRefundAmount());
 
-		Payments payments = paymentRepository.findByImpUid(cancelReq.getImpUid())
-			.orElseThrow(() -> new CustomException(ErrorCode.FORBIDDEN));
+		Payments payments = paymentRepository.findByImpUid(currentOrder.getPayments().getImpUid())
+			.orElseThrow(() -> new PaymentException(PaymentErrorCode.PAYMENT_NOT_FOUND));
 
 		//결제 취소
 		iamportClient.cancelPaymentByImpUid(cancelData);
 
 		payments.changePaymentBySuccess(PaymentStatus.REFUNDED);
+
+		currentOrder.setOrderStatus(OrderStatus.REFUNDED);
 
 	}
 

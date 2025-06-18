@@ -51,10 +51,12 @@ public class User extends BaseEntity {
 	private String address; //주소
 
 	@Column(nullable = false)
+	@Builder.Default
 	@Enumerated(EnumType.STRING)
 	private Role role = Role.USER;
 
 	@Column(nullable = false)
+	@Builder.Default
 	private boolean isDeleted = false;
 
 	// null 허용: 삭제 전에는 null

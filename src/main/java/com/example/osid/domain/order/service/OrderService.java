@@ -28,6 +28,8 @@ import com.example.osid.domain.model.exception.ModelErrorCode;
 import com.example.osid.domain.model.exception.ModelException;
 import com.example.osid.domain.model.repository.ModelRepository;
 import com.example.osid.domain.option.entity.Option;
+import com.example.osid.domain.option.exception.OptionErrorCode;
+import com.example.osid.domain.option.exception.OptionException;
 import com.example.osid.domain.option.repository.OptionRepository;
 import com.example.osid.domain.order.dto.request.OrderRequestDto;
 import com.example.osid.domain.order.dto.response.OrderResponseDto;
@@ -80,16 +82,20 @@ public class OrderService {
 		 * */
 
 		// 예외처리 refactor
-		Dealer dealer = dealerRepository.findById(customUserDetails.getId())
+		Dealer dealer = dealerRepository.findByEmailAndIsDeletedFalse(customUserDetails.getEmail())
 			.orElseThrow(() -> new DealerException(DealerErrorCode.DEALER_NOT_FOUND));
 
-		User user = userRepository.findByEmail(requestDto.getUserEmail())
+		User user = userRepository.findByEmailAndIsDeletedFalse(requestDto.getUserEmail())
 			.orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
 		Model model = modelRepository.findById(requestDto.getModelId())
 			.orElseThrow(() -> new ModelException(ModelErrorCode.MODEL_NOT_FOUND));
 
 		List<Option> options = optionRepository.findByIdIn(requestDto.getOption());
+
+		if (options.size() != requestDto.getOption().size()) {
+			throw new OptionException(OptionErrorCode.OPTION_NOT_FOUND);
+		}
 
 		// 총 금액 계산
 		Long totalPrice = options.stream().mapToLong(Option::getPrice).sum() + model.getPrice();
@@ -215,6 +221,14 @@ public class OrderService {
 			.createdAt(orders.getCreatedAt())
 			.build();
 
+	}
+
+	// 주문 취소
+	@Transactional
+	public void cancelOrder(Long orderId) {
+		Orders order = orderRepository.findById(orderId)
+			.orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
+		order.setOrderStatus(OrderStatus.FAILED);
 	}
 
 	public Object findOrder(CustomUserDetails customUserDetails, Long orderId) {

@@ -58,6 +58,13 @@ public class OrderController {
 
 	}
 
+	// 주문 취소(결제 미완료 등) 요청 API
+	@PostMapping("/api/dealers/order/{orderId}/fail")
+	public CommonResponse<Void> cancelOrder(@PathVariable Long orderId) {
+		orderService.cancelOrder(orderId);
+		return CommonResponse.ok();
+	}
+
 	// 주문 단건 조회
 	@GetMapping("/api/order/{orderId}")
 	@ResponseStatus(HttpStatus.OK)

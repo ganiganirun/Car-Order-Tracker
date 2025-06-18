@@ -1,6 +1,5 @@
 package com.example.osid.event;
 
-import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -27,7 +26,7 @@ public class OrderCompletedListener {
 	private final RabbitTemplate rabbitTemplate;
 
 	@RabbitListener(queues = RabbitMQConfig.ORDER_COMPLETE_QUEUE)
-	public void handleOrderCompleted(OrderCompletedEvent event, Message message) {
+	public void handleOrderCompleted(OrderCompletedEvent event) {
 		int retryCount = event.getRetryCount();
 		log.info("이벤트 수신: orderId={}, retryCount={}", event.getOrderId(), retryCount);
 

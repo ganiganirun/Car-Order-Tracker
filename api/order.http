@@ -1,0 +1,43 @@
+### 환경 변수
+@host = http://localhost
+@port = 8080
+@baseUrl = {{host}}:{{port}}
+
+
+### 주문 생성
+POST {{baseUrl}}/api/dealers/order
+Content-Type: application/json
+Authorization: Bearer {{token}} # 로그인에서 저장된 토큰 가져옴
+
+{
+  "userEmail": "user01@example.com",
+  "option": [
+    1,
+    2
+  ],
+  "modelId": 1,
+  "address": "서울시 강남구..."
+}
+
+### 주문 수정
+PATCH {{baseUrl}}/api/dealers/order/4
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "address": null,
+  "orderStatus": "COMPLETED"
+}
+
+### 주문 단건조회
+GET {{baseUrl}}/api/order/4
+Authorization: Bearer {{token}}
+
+
+### 주문 전체조회
+GET {{baseUrl}}/api/order
+Authorization: Bearer {{token}}
+
+### 주문 삭제
+DELETE {{baseUrl}}/api/dealers/order/2
+Authorization: Bearer {{token}}
