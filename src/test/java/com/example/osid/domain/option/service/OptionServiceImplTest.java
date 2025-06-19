@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import com.example.osid.common.response.PageResponse;
 import com.example.osid.domain.option.dto.OptionMasterResponse;
 import com.example.osid.domain.option.dto.OptionRequest;
 import com.example.osid.domain.option.dto.OptionResponse;
@@ -87,7 +88,7 @@ class OptionServiceImplTest {
 		given(optionRepository.findAllByDeletedAtIsNull(pageable))
 			.willReturn(optionPage);
 
-		Page<OptionResponse> responsePage = optionService.findAllOption(pageable);
+		PageResponse<OptionResponse> responsePage = optionService.findAllOption(pageable);
 
 		assertAll(
 			() -> assertNotNull(responsePage),
