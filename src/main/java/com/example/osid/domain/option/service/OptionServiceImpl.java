@@ -1,5 +1,6 @@
 package com.example.osid.domain.option.service;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,6 +42,7 @@ public class OptionServiceImpl implements OptionService {
 
 	@Override
 	@Transactional(readOnly = true)
+	@Cacheable(cacheNames = "options", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
 	public Page<OptionResponse> findAllOption(Pageable pageable) {
 		Page<Option> optionList = optionRepository.findAllByDeletedAtIsNull(pageable);
 		return optionList.map(OptionResponse::from);

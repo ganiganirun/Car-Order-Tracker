@@ -54,7 +54,7 @@ class ModelServiceImplTest {
 	@Test
 	void 모델_생성_성공() {
 		ModelCreateRequest request = new ModelCreateRequest(
-			"추가 모델", ModelColor.RED, "추가 설명", "/image2.png", ModelCategory.SAFETY, "4", 5000000L
+			"추가 모델", ModelColor.RED, "추가 설명", "/image2.png", ModelCategory.SEDAN, "4", 5000000L
 		);
 
 		modelService.createModel(request);
@@ -105,7 +105,7 @@ class ModelServiceImplTest {
 		Long modelId = 1L;
 
 		ModelUpdateRequest request = new ModelUpdateRequest("수정된 모델명", ModelColor.RED, "수정된 모델설명", "/image.png",
-			ModelCategory.EASE, "7", 1200000L);
+			ModelCategory.SUV, "7", 1200000L);
 
 		given(modelRepository.findByIdAndDeletedAtIsNull(modelId)).willReturn(Optional.of(model));
 
