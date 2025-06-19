@@ -5,22 +5,26 @@ import com.example.osid.domain.option.enums.OptionCategory;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
 public class OptionResponse {
 
-	private final Long id;
+	private Long id;
 
-	private final String name; //옵션 이름
+	private String name; //옵션 이름
 
-	private final String description; //옵션 설명
+	private String description; //옵션 설명
 
-	private final String image; //옵션 이미지
+	private String image; //옵션 이미지
 
-	private final OptionCategory category; //옵션 카테고리
+	private OptionCategory category; //옵션 카테고리
 
-	private final Long price; //옵션 가격
+	private Long price; //옵션 가격
 
 	public static OptionResponse from(Option option) {
 		return new OptionResponse(
