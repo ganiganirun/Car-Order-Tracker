@@ -1,9 +1,12 @@
 package com.example.osid.domain.order.entity;
 
 import com.example.osid.common.entity.BaseEntity;
+import com.example.osid.domain.order.enums.WaitingStatus;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -32,7 +35,11 @@ public class WaitingOrders extends BaseEntity {
 	@JoinColumn(name = "order_id")
 	private Orders orders;
 
+	@Enumerated(EnumType.STRING)
+	private WaitingStatus watingStatus;
+
 	public WaitingOrders(Orders orders) {
 		this.orders = orders;
+		this.watingStatus = WaitingStatus.WAITING;
 	}
 }
