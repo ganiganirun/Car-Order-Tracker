@@ -1,5 +1,6 @@
 package com.example.osid.domain.model.service;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -47,6 +48,7 @@ public class ModelServiceImpl implements ModelService {
 	//모델 전체 조회
 	@Override
 	@Transactional(readOnly = true)
+	@Cacheable(cacheNames = "models", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
 	public Page<ModelResponse> findAllModel(Pageable pageable) {
 
 		Page<Model> modelList = modelRepository.findAllByDeletedAtIsNull(pageable);
