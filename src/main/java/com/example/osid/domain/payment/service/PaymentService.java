@@ -33,9 +33,11 @@ import com.siot.IamportRestClient.response.Payment;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentService {
 
 	private final OrderRepository orderRepository;
@@ -58,6 +60,7 @@ public class PaymentService {
 
 	private static final int FULL_REFUND = 0;
 
+	// 결제 성공 처리
 	@Transactional
 	public void processPaymentDone(PaymentRequestDto.Paid request, IamportResponse<Payment> payment) throws
 		IamportResponseException,
@@ -68,6 +71,12 @@ public class PaymentService {
 		String merchantUid = request.getMerchantUid();
 		Long userId = request.getUserId();
 		Long totalPrice = request.getAmount();
+
+		// 이미 Paid 처리된 impUid 경우 바로 리턴(멱등성 체크)
+		if (paymentRepository.existsByImpUidAndPaymentStatus(request.getImpUid(), PaymentStatus.PAID)) {
+			log.info("duplicate callback ignored: {}", request.getImpUid());
+			return;
+		}
 
 		// orders 테이블에서 오더 상태 변화
 		Orders currentOrder = orderRepository.findByMerchantUid(merchantUid)
@@ -112,12 +121,15 @@ public class PaymentService {
 
 			CancelData cancelData = createCancelData(payment, FULL_REFUND);
 
-			iamportClient.cancelPaymentByImpUid(cancelData);
+			// iamportClient.cancelPaymentByImpUid(cancelData);
+
+			safelyCancelPayment(payment, FULL_REFUND, savePayments);
 
 			throw new PaymentException(PaymentErrorCode.PAYMENT_AMOUNT_MISMATCH);
 		}
 	}
 
+	// 결제 환불
 	@Transactional
 	public void cancelReservation(PaymentRequestDto.Cancel cancelReq) throws IamportResponseException, IOException {
 
@@ -126,6 +138,15 @@ public class PaymentService {
 
 		IamportResponse<Payment> response = iamportClient.paymentByImpUid(currentOrder.getPayments().getImpUid());
 
+		Payment iamportPayment = response.getResponse();
+
+		// 두 값을 비교해서 앞이 크면 1 같으면 0 작으면 -1 반환
+		// 환불 금액이 결제 금액보다 큰 값이 들어오는 것을 방지하기 위함
+		if (BigDecimal.valueOf(cancelReq.getRefundAmount())
+			.compareTo(iamportPayment.getAmount()) > 0) {
+			throw new PaymentException(PaymentErrorCode.PAYMENT_REFUND_TOO_LARGE);
+		}
+
 		//cancelData 생성
 		CancelData cancelData = createCancelData(response, cancelReq.getRefundAmount());
 
@@ -133,7 +154,8 @@ public class PaymentService {
 			.orElseThrow(() -> new PaymentException(PaymentErrorCode.PAYMENT_NOT_FOUND));
 
 		//결제 취소
-		iamportClient.cancelPaymentByImpUid(cancelData);
+		// iamportClient.cancelPaymentByImpUid(cancelData);
+		safelyCancelPayment(response, cancelReq.getRefundAmount(), payments);
 
 		payments.changePaymentBySuccess(PaymentStatus.REFUNDED);
 
@@ -141,6 +163,7 @@ public class PaymentService {
 
 	}
 
+	// 취소 데이터 생성
 	private CancelData createCancelData(IamportResponse<Payment> payment, int refundAmount) {
 		if (refundAmount == 0) { //전액 환불일 경우
 			return new CancelData(payment.getResponse().getImpUid(), true);
@@ -150,4 +173,32 @@ public class PaymentService {
 
 	}
 
+	// 환불 실패 대비
+	private void safelyCancelPayment(IamportResponse<Payment> payment, int refundAmount, Payments payments) {
+		try {
+			iamportClient.cancelPaymentByImpUid(createCancelData(payment, refundAmount));
+		} catch (IamportResponseException | IOException ex) {
+			log.error("아임포트 취소 실패 impUid={}, refund={}, msg={}",
+				payment, refundAmount, ex.getMessage(), ex);
+
+			// 실패 시 결제내역에 수동처리 플래그 기록(운영자 개입 필요)
+			payments.changePaymentBySuccess(PaymentStatus.MANUAL_REVIEW);
+			return;
+		}
+	}
+
+	// public Page<PaymentResponseDto.ManualReview> findManaulReview(Pageable pageable) {
+	//
+	// 	Page<Payments> payments = paymentRepository.findbyPaymentStatus(pageable, PaymentStatus.MANUAL_REVIEW);
+	//
+	// 	return payments
+	// 		.stream()
+	// 		.map(payment ->
+	// 			new PaymentResponseDto(
+	// 				payment.getUser().getId(),
+	// 				payment.getAmount(),
+	// 				orderRepository.findByPayments(payment)
+	// 					.orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND))
+	// 			));
+	// }
 }
