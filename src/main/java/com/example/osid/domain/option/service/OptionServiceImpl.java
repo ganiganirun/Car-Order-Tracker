@@ -7,7 +7,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.osid.common.response.PageResponse;
 import com.example.osid.domain.option.dto.OptionMasterResponse;
 import com.example.osid.domain.option.dto.OptionRequest;
 import com.example.osid.domain.option.dto.OptionResponse;
@@ -44,10 +43,9 @@ public class OptionServiceImpl implements OptionService {
 	@Override
 	@Transactional(readOnly = true)
 	@Cacheable(cacheNames = "options", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
-	public PageResponse<OptionResponse> findAllOption(Pageable pageable) {
+	public Page<OptionResponse> findAllOption(Pageable pageable) {
 		Page<Option> optionList = optionRepository.findAllByDeletedAtIsNull(pageable);
-		Page<OptionResponse> dtoPage = optionList.map(OptionResponse::from);
-		return PageResponse.from(dtoPage);
+		return optionList.map(OptionResponse::from);
 	}
 
 	@Override

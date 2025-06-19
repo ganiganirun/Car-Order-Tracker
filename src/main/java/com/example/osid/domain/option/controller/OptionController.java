@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.osid.common.response.CommonResponse;
-import com.example.osid.common.response.PageResponse;
 import com.example.osid.domain.option.dto.OptionMasterResponse;
 import com.example.osid.domain.option.dto.OptionRequest;
 import com.example.osid.domain.option.dto.OptionResponse;
@@ -56,7 +55,7 @@ public class OptionController {
 	//옵션 전체 조회
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
-	public CommonResponse<PageResponse<OptionResponse>> findAllOption(
+	public CommonResponse<Page<OptionResponse>> findAllOption(
 		@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
 	) {
 
