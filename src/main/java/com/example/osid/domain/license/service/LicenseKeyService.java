@@ -1,9 +1,9 @@
 package com.example.osid.domain.license.service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -83,23 +83,34 @@ public class LicenseKeyService {
 			);
 	}
 
-	public List<LicenseInfoResponseDto> findAllLicense() {
+	// public List<LicenseInfoResponseDto> findAllLicense() {
+	//
+	// 	List<LicenseKey> findAllLicenses = licenseKeyRepository.findAll();
+	//
+	// 	List<LicenseInfoResponseDto> licenseList = new ArrayList<>();
+	//
+	// 	for (LicenseKey licenseKey : findAllLicenses) {
+	// 		licenseList.add(new LicenseInfoResponseDto(
+	// 				licenseKey.getProductKey(),
+	// 				licenseKey.getLicenseStatus(),
+	// 				licenseKey.getOwnerId(),
+	// 				licenseKey.getAssignedAt()
+	// 			)
+	// 		);
+	// 	}
+	//
+	// 	return licenseList;
+	// }
 
-		List<LicenseKey> findAllLicenses = licenseKeyRepository.findAll();
+	public Page<LicenseInfoResponseDto> findAllLicense(Pageable pageable) {
+		Page<LicenseKey> page = licenseKeyRepository.findAll(pageable);
 
-		List<LicenseInfoResponseDto> licenseList = new ArrayList<>();
-
-		for (LicenseKey licenseKey : findAllLicenses) {
-			licenseList.add(new LicenseInfoResponseDto(
-					licenseKey.getProductKey(),
-					licenseKey.getLicenseStatus(),
-					licenseKey.getOwnerId(),
-					licenseKey.getAssignedAt()
-				)
-			);
-		}
-
-		return licenseList;
+		return page.map(licenseKey -> new LicenseInfoResponseDto(
+			licenseKey.getProductKey(),
+			licenseKey.getLicenseStatus(),
+			licenseKey.getOwnerId(),
+			licenseKey.getAssignedAt()
+		));
 	}
 
 	/** 기존키를 ownerId에 할당(가입 시) */

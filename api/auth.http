@@ -11,9 +11,23 @@ Content-Type: application/json
   "password": "12345678aA!"
 }
 > {%
-    console.log("BODY 타입:", typeof response.body, response.body);
-    client.global.set("token", response.body.data)
+    // 1) response.body가 'string'이면 JSON.parse, 아니면 그대로 resp에 할당
+    const resp = typeof response.body === "string"
+        ? JSON.parse(response.body)
+        : response.body;
+
+    // 2) 토큰 꺼내기
+    const {accessToken, refreshToken} = resp.data;
+
+    // 3) 전역 변수에 저장
+    client.global.set("token", accessToken);
+    client.global.set("refresh", refreshToken);
+
+    // 4) (디버그) 콘솔 출력
+    console.log("▶ accessToken =", accessToken);
+    console.log("▶ refreshToken =", refreshToken);
 %}
+
 
 ### Dealer 로그인
 POST {{baseUrl}}/api/auth/login
@@ -24,8 +38,21 @@ Content-Type: application/json
   "password": "12345678aA!"
 }
 > {%
-    console.log("BODY 타입:", typeof response.body, response.body);
-    client.global.set("token", response.body.data)
+    // 1) response.body가 'string'이면 JSON.parse, 아니면 그대로 resp에 할당
+    const resp = typeof response.body === "string"
+        ? JSON.parse(response.body)
+        : response.body;
+
+    // 2) 토큰 꺼내기
+    const {accessToken, refreshToken} = resp.data;
+
+    // 3) 전역 변수에 저장
+    client.global.set("token", accessToken);
+    client.global.set("refresh", refreshToken);
+
+    // 4) (디버그) 콘솔 출력
+    console.log("▶ accessToken =", accessToken);
+    console.log("▶ refreshToken =", refreshToken);
 %}
 
 ### User 로그인
@@ -37,8 +64,33 @@ Content-Type: application/json
   "password": "12345678aA!"
 }
 > {%
-    console.log("BODY 타입:", typeof response.body, response.body);
-    client.global.set("token", response.body.data)
+    // 1) response.body가 'string'이면 JSON.parse, 아니면 그대로 resp에 할당
+    const resp = typeof response.body === "string"
+        ? JSON.parse(response.body)
+        : response.body;
+
+    // 2) 토큰 꺼내기
+    const {accessToken, refreshToken} = resp.data;
+
+    // 3) 전역 변수에 저장
+    client.global.set("token", accessToken);
+    client.global.set("refresh", refreshToken);
+
+    // 4) (디버그) 콘솔 출력
+    console.log("▶ accessToken =", accessToken);
+    console.log("▶ refreshToken =", refreshToken);
 %}
+
+### 로그아웃
+POST {{baseUrl}}/api/auth/logout
+Content-Type: application/json
+Authorization: Bearer {{token}}
+Refresh-Token: {{refresh}}
+
+### Refresh
+POST {{baseUrl}}/api/auth/refresh
+Content-Type: application/json
+Authorization: Bearer {{token}}
+Refresh-Token: {{refresh}}
 
 

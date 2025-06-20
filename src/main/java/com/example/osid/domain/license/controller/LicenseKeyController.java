@@ -1,7 +1,8 @@
 package com.example.osid.domain.license.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,9 +46,17 @@ public class LicenseKeyController {
 		return CommonResponse.ok();
 	}
 
+	// @GetMapping()
+	// public CommonResponse<List<LicenseInfoResponseDto>> findAllLicense() {
+	// 	List<LicenseInfoResponseDto> licenseList = licenseKeyService.findAllLicense();
+	// 	return CommonResponse.ok(licenseList);
+	// }
+
 	@GetMapping()
-	public CommonResponse<List<LicenseInfoResponseDto>> findAllLicense() {
-		List<LicenseInfoResponseDto> licenseList = licenseKeyService.findAllLicense();
+	public CommonResponse<Page<LicenseInfoResponseDto>> findAllLicense(
+		@PageableDefault(size = 10) Pageable pageable
+	) {
+		Page<LicenseInfoResponseDto> licenseList = licenseKeyService.findAllLicense(pageable);
 		return CommonResponse.ok(licenseList);
 	}
 

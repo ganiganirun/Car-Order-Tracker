@@ -15,7 +15,8 @@ public class JwtUtil {
 	@Value("${jwt.secret}")
 	private String SECRET_KEY; // 토큰을 생성할 때 사용할 비밀키
 
-	private long TOKEN_TIME = 1000 * 60 * 60;
+	private long TOKEN_TIME = 1000 * 60 * 10;
+	private long REFRESH_TOKEN_EXP_TIME = 1000 * 60 * 60;   //  1000 * 60 * 60 * 24; 1일
 
 	// JWT TOKEN 생성
 	public String createToken(String email, String name, String role, Long id) {
@@ -27,6 +28,18 @@ public class JwtUtil {
 			.setIssuedAt(new Date())  // 발급 시간
 			.setExpiration(new Date(System.currentTimeMillis() + TOKEN_TIME))  // 만료 시간
 			.signWith(SignatureAlgorithm.HS256, SECRET_KEY)  // HS256 알고리즘과 비밀키로 서명
+			.compact();
+	}
+
+	// Refresh Token 생성
+	public String createRefreshToken(String email, String role, Long id) {
+		return Jwts.builder()
+			.setSubject(email)  // JWT의 Subject에 이메일 저장
+			.claim("id", id)
+			.claim("role", role)  // 역할을 claim에 추가
+			.setIssuedAt(new Date())  // 발급 시간
+			.setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXP_TIME))
+			.signWith(SignatureAlgorithm.HS256, SECRET_KEY)
 			.compact();
 	}
 
@@ -77,5 +90,9 @@ public class JwtUtil {
 		} catch (Exception e) {
 			return false;
 		}
+	}
+
+	public long getRefreshTokenExpTime() {
+		return REFRESH_TOKEN_EXP_TIME;
 	}
 }
