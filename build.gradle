@@ -1,6 +1,7 @@
 buildscript {
     ext {
         queryDslVersion = "5.0.0"
+        nettyVersion = "4.1.111.Final"
     }
 }
 
@@ -78,6 +79,25 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-cache'
 //    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'com.github.ben-manes.caffeine:caffeine'
+
+    // WebClient
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    // WebFlux가 Netty를 내부에서 사용
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    /* >>> macOS-arm64 네이티브 DNS 라이브러리 추가 (runtimeOnly) */
+    runtimeOnly "io.netty:netty-resolver-dns-native-macos:${nettyVersion}:osx-aarch_64"
+
+    //batch, quartz
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+    implementation 'org.springframework.boot:spring-boot-starter-quartz'
+    implementation 'org.springframework.boot:spring-boot-starter'
+    runtimeOnly 'com.h2database:h2'
+    implementation 'com.mchange:c3p0:0.9.5.5'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    testImplementation 'org.springframework.batch:spring-batch-test'
+
 }
 
 tasks.named('test') {
