@@ -306,6 +306,21 @@ public class OrderService {
 		return null;
 	}
 
+	// public OrderDetailResponse getOrderDetail(Long orderId) {
+	// 	Orders o = orderRepository.findByIdFetchAll(orderId)
+	// 		.orElseThrow(...);
+	//
+	// 	List<OrderDetailResponse.ProcessStep> steps =
+	// 		historyRepository.findByOrderId(orderId).stream()
+	// 			.map(h -> new OrderDetailResponse.ProcessStep(
+	// 				h.getStage().getKorName(), h.getOccurredAt()))
+	// 			.toList();
+	//
+	// 	String payStatus = o.getPayments().getPaymentStatus().getKor();
+	//
+	// 	return OrderDetailResponse.of(o, steps, payStatus);
+	// }
+
 	// 주문 전체 조회
 	public Page<OrderResponseDto.FindAll> findAllOrder(
 		CustomUserDetails customUserDetails, Pageable pageable) {
