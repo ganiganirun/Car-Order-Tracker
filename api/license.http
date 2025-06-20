@@ -7,8 +7,9 @@ POST {{baseUrl}}/licenses/assign?ownerId=1
 Content-Type: application/json
 
 
-### License 전체 조회
+### License 전체 조회 //
 GET {{baseUrl}}/api/licenses
+# GET {{baseUrl}}/api/licenses?page=1&size=10
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
