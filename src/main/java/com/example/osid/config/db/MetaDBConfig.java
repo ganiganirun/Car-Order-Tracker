@@ -1,4 +1,4 @@
-package com.example.osid.config;
+package com.example.osid.config.db;
 
 import javax.sql.DataSource;
 
@@ -11,7 +11,7 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
-public class MetadbConfig {
+public class MetaDBConfig {
 
 	@Primary
 	@Bean
