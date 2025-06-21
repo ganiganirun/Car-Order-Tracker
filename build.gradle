@@ -91,12 +91,12 @@ dependencies {
 
     //batch, quartz
     implementation 'org.springframework.boot:spring-boot-starter-batch'
-    implementation 'org.springframework.boot:spring-boot-starter-quartz'
     implementation 'org.springframework.boot:spring-boot-starter'
     runtimeOnly 'com.h2database:h2'
     implementation 'com.mchange:c3p0:0.9.5.5'
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     testImplementation 'org.springframework.batch:spring-batch-test'
+
 
 }
 
