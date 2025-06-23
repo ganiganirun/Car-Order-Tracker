@@ -1,6 +1,6 @@
 package com.example.osid.domain.order.entity;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -61,10 +61,10 @@ public class Orders extends BaseEntity {
 	private OrderStatus orderStatus; // 주문 상태
 
 	@Column(name = "expected_delivery_date")
-	private LocalDate expectedDeliveryAt; // 예상 출고일
+	private LocalDateTime expectedDeliveryAt; // 예상 출고일
 
 	@Column(name = "actual_delivery_date")
-	private LocalDate actualDeliveryAt; // 실제 출고일
+	private LocalDateTime actualDeliveryAt; // 실제 출고일
 
 	@ManyToOne
 	private User user; // 유저 정보
