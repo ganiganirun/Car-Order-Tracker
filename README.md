@@ -10,7 +10,7 @@
 
 팀원 및 역할을 아래와 같이 기재하세요.
 
-* 송가은 (order, payment, history , AOP - Logging, Batch)
+* 송가은 (order, payment, history , AOP - Logging, Batch, waitingOrder, event처리, DB 분리)
 * 최성원 (머신러닝 활용 차량 출고일 예측, 상담)
 * 유세영 (Model, Option, MyCar, Email, event 처리)
 * 현정근 (인증/인가, Master, Dealer, User, License, Front, Intercepter - Logging)
@@ -26,7 +26,8 @@
 * **캐싱**: Caffeine
 * **로깅**: AOP 기반 메소드 실행 로그
 * **QueryDSL**: 동적 쿼리 지원
-* **머신러닝**: MLPRegressor 기반 공정 소요 시간 예측 스크립트 (`train.py`) + 자동화
+* **머신러닝**: MLP머신러닝 모 기반 공정 소요 시간 예측 스크립트 (`train.py`) + 자동화
+* **배치**: 대기 중인 주문을 조회해 외부 ML API로 예측 공정 소요 시간을 계산, 이를 기반으로 공정 이력을 생성해 DB에 저장하는 배치 작업 + 자동화
 
 
 ## 핵심 기능
