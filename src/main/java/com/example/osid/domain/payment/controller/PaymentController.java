@@ -3,8 +3,6 @@ package com.example.osid.domain.payment.controller;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -59,12 +57,19 @@ public class PaymentController {
 	}
 
 	@PostMapping("/cancel")
-	public ResponseEntity<CommonResponse> createPayment(@RequestBody PaymentRequestDto.Cancel cancelReq) throws
+	public CommonResponse<Void> createPayment(@RequestBody PaymentRequestDto.Cancel cancelReq) throws
 		IamportResponseException,
 		IOException {
 		paymentService.cancelReservation(cancelReq);
-		return new ResponseEntity<>(CommonResponse.ok(), HttpStatus.OK);
+		return CommonResponse.ok();
 	}
+
+	// @GetMapping("/manualreview")
+	// public CommonResponse<PaymentResponseDto.ManualReview> findManualReview(
+	// 	@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+	// ) {
+	// 	paymentService.findManaulReview(pageable);
+	// }
 
 }
 

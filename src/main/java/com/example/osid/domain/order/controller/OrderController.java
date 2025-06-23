@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.osid.common.auth.CustomUserDetails;
 import com.example.osid.common.response.CommonResponse;
 import com.example.osid.domain.order.dto.request.OrderRequestDto;
+import com.example.osid.domain.order.dto.response.OrderDetailResponse;
 import com.example.osid.domain.order.dto.response.OrderResponseDto;
 import com.example.osid.domain.order.service.OrderService;
 
@@ -68,12 +69,12 @@ public class OrderController {
 	// 주문 단건 조회
 	@GetMapping("/api/order/{orderId}")
 	@ResponseStatus(HttpStatus.OK)
-	public CommonResponse<Object> findOrder(
+	public CommonResponse<OrderDetailResponse> findOrder(
 		@PathVariable Long orderId,
 		@AuthenticationPrincipal CustomUserDetails customUserDetails
 	) {
 
-		Object order = orderService.findOrder(customUserDetails, orderId);
+		OrderDetailResponse order = orderService.findOrder(customUserDetails, orderId);
 
 		return CommonResponse.ok(order);
 	}

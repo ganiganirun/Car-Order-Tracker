@@ -1,6 +1,5 @@
 package com.example.osid.domain.order.dto.response;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -63,73 +62,9 @@ public class OrderResponseDto {
 
 		private OrderStatus orderStatus; // 주문 상태
 
-		private LocalDate expectedDeliveryAt; // 예상 출고일
+		private LocalDateTime expectedDeliveryAt; // 예상 출고일
 
-		private LocalDate actualDeliveryAt; // 실제 출고일
-
-		private LocalDateTime createdAt;
-
-	}
-
-	@Builder
-	@Getter
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class AdminView {
-
-		private Long id;
-
-		private String userName;
-
-		private String dealerName;
-
-		private List<String> orderOptions;
-
-		private String model;
-
-		private String address;
-
-		private Long totalPrice;
-
-		private String merchantUid;
-
-		private OrderStatus orderStatus; // 주문 상태
-
-		private LocalDate expectedDeliveryAt; // 예상 출고일
-
-		private LocalDate actualDeliveryAt; // 실제 출고일
-
-		private LocalDateTime createdAt;
-
-	}
-
-	@Builder
-	@Getter
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class UserView {
-
-		private Long id;
-
-		private String userName;
-
-		private String dealerName;
-
-		private List<String> orderOptions;
-
-		private String model;
-
-		private String address;
-
-		private Long totalPrice;
-
-		private String merchantUid;
-
-		private OrderStatus orderStatus; // 주문 상태
-
-		private LocalDate expectedDeliveryAt; // 예상 출고일
-
-		private LocalDate actualDeliveryAt; // 실제 출고일
+		private LocalDateTime actualDeliveryAt; // 실제 출고일
 
 		private LocalDateTime createdAt;
 

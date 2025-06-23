@@ -1,10 +1,6 @@
 package com.example.osid.domain.history.entity;
 
-import java.time.LocalDateTime;
-
-import org.springframework.data.annotation.CreatedDate;
-
-import com.example.osid.domain.history.enums.ProductionHistory;
+import java.math.BigDecimal;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,9 +12,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Builder
 @Getter
+@Setter
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -30,22 +28,24 @@ public class History {
 	private Long id;
 
 	@Column(nullable = false)
-	private String bodyNumber; //
+	private String bodyNumber;
 
 	@Column(nullable = false)
-	private ProductionHistory productionHistory;
-
-	@CreatedDate
-	@Column(updatable = false)
-	private LocalDateTime startDate; // 공정 시작 날짜 시간
-
-	@Column
-	private LocalDateTime endDate; // 공정 끝난 날짜 시간 이 친구 null  가능
+	private BigDecimal stage1;
 
 	@Column(nullable = false)
-	private String productionPlant; //생산 공장
+	private BigDecimal stage2;
 
-	@Column
-	private String issue; //예외 이슈(비고)
+	@Column(nullable = false)
+	private BigDecimal stage3;
+
+	@Column(nullable = false)
+	private BigDecimal stage4;
+
+	@Column(nullable = false)
+	private BigDecimal stage5;
+
+	@Column(nullable = false)
+	private BigDecimal totalDuration;
 
 }

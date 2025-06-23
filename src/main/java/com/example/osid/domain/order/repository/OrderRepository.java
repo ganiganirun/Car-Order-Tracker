@@ -9,4 +9,6 @@ import com.example.osid.domain.order.entity.Orders;
 public interface OrderRepository extends JpaRepository<Orders, Long> {
 
 	Optional<Orders> findByMerchantUid(String merchantUid);
+
+	Optional<Orders> findByBodyNumber(String bodyNumber);
 }

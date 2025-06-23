@@ -1,7 +1,10 @@
 package com.example.osid.domain.order.service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.data.domain.Page;
@@ -18,6 +21,10 @@ import com.example.osid.domain.dealer.entity.Dealer;
 import com.example.osid.domain.dealer.exception.DealerErrorCode;
 import com.example.osid.domain.dealer.exception.DealerException;
 import com.example.osid.domain.dealer.repository.DealerRepository;
+import com.example.osid.domain.history.entity.History;
+import com.example.osid.domain.history.exception.HistoryErrorCode;
+import com.example.osid.domain.history.exception.HistoryException;
+import com.example.osid.domain.history.repository.HistoryRepository;
 import com.example.osid.domain.master.entity.Master;
 import com.example.osid.domain.master.exception.MasterErrorCode;
 import com.example.osid.domain.master.exception.MasterException;
@@ -31,6 +38,7 @@ import com.example.osid.domain.option.exception.OptionErrorCode;
 import com.example.osid.domain.option.exception.OptionException;
 import com.example.osid.domain.option.repository.OptionRepository;
 import com.example.osid.domain.order.dto.request.OrderRequestDto;
+import com.example.osid.domain.order.dto.response.OrderDetailResponse;
 import com.example.osid.domain.order.dto.response.OrderResponseDto;
 import com.example.osid.domain.order.entity.OrderOption;
 import com.example.osid.domain.order.entity.Orders;
@@ -43,6 +51,10 @@ import com.example.osid.domain.user.entity.User;
 import com.example.osid.domain.user.exception.UserErrorCode;
 import com.example.osid.domain.user.exception.UserException;
 import com.example.osid.domain.user.repository.UserRepository;
+import com.example.osid.domain.waitingorder.entity.WaitingOrders;
+import com.example.osid.domain.waitingorder.exception.WaitingOrderErrorCode;
+import com.example.osid.domain.waitingorder.exception.WaitingOrderException;
+import com.example.osid.domain.waitingorder.repository.WaitingOrderRepository;
 import com.example.osid.event.OrderCompletedMyCarEvent;
 import com.example.osid.event.OrderEventPublisher;
 import com.example.osid.event.entity.FailedEvent;
@@ -66,6 +78,8 @@ public class OrderService {
 	private final MasterRepository masterRepository;
 	private final FailedEventRepository failedEventRepository;
 	private final OrderEventPublisher orderEventPublisher;
+	private final HistoryRepository historyRepository;
+	private final WaitingOrderRepository waitingOrderRepository;
 
 	// 주문 생성
 	public OrderResponseDto.Add createOrder(CustomUserDetails customUserDetails, OrderRequestDto.Add requestDto) {
@@ -151,29 +165,6 @@ public class OrderService {
 		// 검증
 		validateOrderOwner(orders, customUserDetails, extractRole(customUserDetails));
 
-		// 유동적으로 바꾸기 위해서 if문으로 관리
-		// 추후 다른 방법이 생기면 바뀔 예정
-
-		// 주소 수정
-		// if (requestDto.getAddress() != null) {
-		// 	orders.setAddress(requestDto.getAddress());
-		// }
-		//
-		// // 주문 상태 수정
-		// if (requestDto.getOrderStatus() != null) {
-		// 	orders.setOrderStatus(requestDto.getOrderStatus());
-		// }
-		//
-		// // 예상 출고일 수정
-		// if (requestDto.getExpectedDeliveryAt() != null) {
-		// 	orders.setExpectedDeliveryAt(requestDto.getExpectedDeliveryAt());
-		// }
-		//
-		// // 실제 출고일 수정
-		// if (requestDto.getActualDeliveryAt() != null) {
-		// 	orders.setActualDeliveryAt(requestDto.getActualDeliveryAt());
-		// }
-
 		if (requestDto.getAddress().isPresent()) {
 			orders.setAddress(requestDto.getAddress().get());
 		}
@@ -235,7 +226,7 @@ public class OrderService {
 		order.setOrderStatus(OrderStatus.FAILED);
 	}
 
-	public Object findOrder(CustomUserDetails customUserDetails, Long orderId) {
+	public OrderDetailResponse findOrder(CustomUserDetails customUserDetails, Long orderId) {
 
 		// 예외처리 refactor
 		Orders orders = extractOrder(orderId);
@@ -249,61 +240,64 @@ public class OrderService {
 		// 검증
 		validateOrderOwner(orders, customUserDetails, role);
 
-		// role 에 따라 다른 값 return
-		switch (role) {
-			case USER -> {
-				return OrderResponseDto.UserView.builder()
-					.id(orders.getId())
-					.userName(orders.getUser().getName())
-					.dealerName(orders.getDealer().getName())
-					.model(orders.getModel().getName())
-					.orderOptions(optionNames)
-					.address(orders.getAddress())
-					.totalPrice(orders.getTotalPrice())
-					.merchantUid(orders.getMerchantUid())
-					.orderStatus(orders.getOrderStatus())
-					.expectedDeliveryAt(orders.getExpectedDeliveryAt())
-					.actualDeliveryAt(orders.getActualDeliveryAt())
-					.createdAt(orders.getCreatedAt())
-					.build();
-			}
-			case DEALER -> {
-				return OrderResponseDto.AdminView.builder()
-					.id(orders.getId())
-					.userName(orders.getUser().getName())
-					.dealerName(orders.getDealer().getName())
-					.model(orders.getModel().getName())
-					.orderOptions(optionNames)
-					.address(orders.getAddress())
-					.totalPrice(orders.getTotalPrice())
-					.merchantUid(orders.getMerchantUid())
-					.orderStatus(orders.getOrderStatus())
-					.expectedDeliveryAt(orders.getExpectedDeliveryAt())
-					.actualDeliveryAt(orders.getActualDeliveryAt())
-					.createdAt(orders.getCreatedAt())
-					.build();
-			}
-			case MASTER -> {
-				// 마스터는 모든 주문에 대해서 조회 가능
-				return OrderResponseDto.AdminView.builder()
-					.id(orders.getId())
-					.model(orders.getModel().getName())
-					.userName(orders.getUser().getName())
-					.dealerName(orders.getDealer().getName())
-					.orderOptions(optionNames)
-					.address(orders.getAddress())
-					.totalPrice(orders.getTotalPrice())
-					.merchantUid(orders.getMerchantUid())
-					.orderStatus(orders.getOrderStatus())
-					.expectedDeliveryAt(orders.getExpectedDeliveryAt())
-					.actualDeliveryAt(orders.getActualDeliveryAt())
-					.createdAt(orders.getCreatedAt())
-					.build();
-			}
+		List<OrderDetailResponse.ProcessStep> processSteps = buildProcessSteps(role, orders);
 
-		}
+		return OrderDetailResponse.of(orders, processSteps);
 
-		return null;
+		// // role 에 따라 다른 값 return
+		// switch (role) {
+		// 	case USER -> {
+		// 		return OrderResponseDto.UserView.builder()
+		// 			.id(orders.getId())
+		// 			.userName(orders.getUser().getName())
+		// 			.dealerName(orders.getDealer().getName())
+		// 			.model(orders.getModel().getName())
+		// 			.orderOptions(optionNames)
+		// 			.address(orders.getAddress())
+		// 			.totalPrice(orders.getTotalPrice())
+		// 			.merchantUid(orders.getMerchantUid())
+		// 			.orderStatus(orders.getOrderStatus())
+		// 			.expectedDeliveryAt(orders.getExpectedDeliveryAt())
+		// 			.actualDeliveryAt(orders.getActualDeliveryAt())
+		// 			.createdAt(orders.getCreatedAt())
+		// 			.build();
+		// 	}
+		// 	case DEALER -> {
+		// 		return OrderResponseDto.AdminView.builder()
+		// 			.id(orders.getId())
+		// 			.userName(orders.getUser().getName())
+		// 			.dealerName(orders.getDealer().getName())
+		// 			.model(orders.getModel().getName())
+		// 			.orderOptions(optionNames)
+		// 			.address(orders.getAddress())
+		// 			.totalPrice(orders.getTotalPrice())
+		// 			.merchantUid(orders.getMerchantUid())
+		// 			.orderStatus(orders.getOrderStatus())
+		// 			.expectedDeliveryAt(orders.getExpectedDeliveryAt())
+		// 			.actualDeliveryAt(orders.getActualDeliveryAt())
+		// 			.createdAt(orders.getCreatedAt())
+		// 			.build();
+		// 	}
+		// 	case MASTER -> {
+		// 		// 마스터는 모든 주문에 대해서 조회 가능
+		// 		return OrderResponseDto.AdminView.builder()
+		// 			.id(orders.getId())
+		// 			.model(orders.getModel().getName())
+		// 			.userName(orders.getUser().getName())
+		// 			.dealerName(orders.getDealer().getName())
+		// 			.orderOptions(optionNames)
+		// 			.address(orders.getAddress())
+		// 			.totalPrice(orders.getTotalPrice())
+		// 			.merchantUid(orders.getMerchantUid())
+		// 			.orderStatus(orders.getOrderStatus())
+		// 			.expectedDeliveryAt(orders.getExpectedDeliveryAt())
+		// 			.actualDeliveryAt(orders.getActualDeliveryAt())
+		// 			.createdAt(orders.getCreatedAt())
+		// 			.build();
+		// 	}
+		//
+		// }
+
 	}
 
 	// 주문 전체 조회
@@ -421,6 +415,99 @@ public class OrderService {
 			.map(OrderOption::getOption)
 			.map(Option::getName)
 			.toList();
+
+	}
+
+	private List<OrderDetailResponse.ProcessStep> buildProcessSteps(Role role, Orders orders) {
+		WaitingOrders waitingOrders = waitingOrderRepository.findByOrders(orders)
+			.orElseThrow(() -> new WaitingOrderException(WaitingOrderErrorCode.WAITING_ORDER_NOT_FOUND));
+
+		History history = historyRepository.findByBodyNumber(orders.getBodyNumber())
+			.orElseThrow(() -> new HistoryException(HistoryErrorCode.HISTORY_NOT_FOUND));
+
+		List<OrderDetailResponse.ProcessStep> steps = new ArrayList<>();
+
+		LocalDateTime base = waitingOrders.getUpdatedAt(); // 기준 시작일
+
+		steps.add(OrderDetailResponse.ProcessStep.from("주문", orders.getCreatedAt(),
+			waitingOrders.getCreatedAt()));
+		steps.add(OrderDetailResponse.ProcessStep.from("생산대기", waitingOrders.getCreatedAt(),
+			waitingOrders.getUpdatedAt()));
+
+		double total = history.getTotalDuration().doubleValue();
+		List<Integer> time = hourMin(total);
+		LocalDateTime expectedAt = base.plusHours(time.get(0)).plusMinutes(time.get(1)).plusDays(8);
+
+		if (role.equals(Role.USER)) {
+			steps.add(OrderDetailResponse.ProcessStep.from("생산중", waitingOrders.getUpdatedAt(),
+				expectedAt));
+			// 출고 단계
+			steps.add(OrderDetailResponse.ProcessStep.from(
+				"출고준비",
+				expectedAt,
+				expectedAt.plusDays(8)
+			));
+			steps.add(OrderDetailResponse.ProcessStep.from(
+				"출고 완료",
+				orders.getActualDeliveryAt(),
+				orders.getActualDeliveryAt()
+			));
+
+			return steps;
+
+		}
+
+		// 관리자용 공정단계
+		Map<String, Double> stageDurationMap = Map.of(
+			"프레스", history.getStage1().doubleValue(),
+			"차체", history.getStage2().doubleValue(),
+			"도장", history.getStage3().doubleValue(),
+			"의장", history.getStage4().doubleValue(),
+			"검사", history.getStage5().doubleValue()
+		);
+
+		LocalDateTime current = base;
+
+		for (Map.Entry<String, Double> entry : stageDurationMap.entrySet()) {
+
+			List<Integer> admintime = hourMin(entry.getValue());
+
+			LocalDateTime end = current.plusHours(admintime.get(0)).plusMinutes(admintime.get(1));
+
+			if (entry.getKey().equals("프레스")) {
+				end = end.plusDays(8);
+			}
+
+			steps.add(OrderDetailResponse.ProcessStep.from(
+				entry.getKey(),
+				current,
+				end
+			));
+
+			current = end;
+		}
+		// 출고 단계
+		steps.add(OrderDetailResponse.ProcessStep.from(
+			"출고준비",
+			current,
+			current.plusDays(8)
+		));
+		steps.add(OrderDetailResponse.ProcessStep.from(
+			"출고 완료",
+			orders.getActualDeliveryAt(),
+			orders.getActualDeliveryAt()
+		));
+
+		return steps;
+	}
+
+	private List<Integer> hourMin(double duration) {
+		int hours = (int)duration;
+		int minutes = (int)((duration - hours) * 60);
+
+		List<Integer> hours1 = List.of(hours, minutes);
+
+		return hours1;
 
 	}
 
