@@ -1,6 +1,6 @@
 package com.example.osid.domain.order.dto.request;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.openapitools.jackson.nullable.JsonNullable;
@@ -41,9 +41,9 @@ public class OrderRequestDto {
 
 		private OrderStatus orderStatus;
 
-		private JsonNullable<LocalDate> expectedDeliveryAt = JsonNullable.undefined();
+		private JsonNullable<LocalDateTime> expectedDeliveryAt = JsonNullable.undefined();
 
-		private JsonNullable<LocalDate> actualDeliveryAt = JsonNullable.undefined();
+		private JsonNullable<LocalDateTime> actualDeliveryAt = JsonNullable.undefined();
 
 	}
 
