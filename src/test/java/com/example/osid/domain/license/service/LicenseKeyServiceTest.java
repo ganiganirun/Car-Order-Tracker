@@ -17,6 +17,9 @@ import com.example.osid.domain.license.entity.LicenseKey;
 import com.example.osid.domain.license.enums.LicenseStatus;
 import com.example.osid.domain.license.repository.LicenseKeyRepository;
 import com.example.osid.domain.master.repository.MasterRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 class LicenseKeyServiceTest {
 
@@ -38,17 +41,20 @@ class LicenseKeyServiceTest {
 	void findAllLicense_success() {
 		// given: 샘플 라이센스 키 3개 생성
 		List<LicenseKey> licenseKeys = List.of(
-			createLicenseKey("KEY-1", LicenseStatus.ASSIGNED, 1L),
-			createLicenseKey("KEY-2", LicenseStatus.AVAILABLE, null),
-			createLicenseKey("KEY-3", LicenseStatus.REVOKED, 2L)
+				createLicenseKey("KEY-1", LicenseStatus.ASSIGNED, 1L),
+				createLicenseKey("KEY-2", LicenseStatus.AVAILABLE, null),
+				createLicenseKey("KEY-3", LicenseStatus.REVOKED, 2L)
 		);
-		when(licenseKeyRepository.findAll()).thenReturn(licenseKeys);
+		Page<LicenseKey> licenseKeyPage = new PageImpl<>(licenseKeys);
+		Pageable pageable = Pageable.unpaged();
+		when(licenseKeyRepository.findAll(pageable)).thenReturn(licenseKeyPage);
 
 		// when: 서비스 메서드 호출
-		List<LicenseInfoResponseDto> result = licenseKeyService.findAllLicense();
+		Page<LicenseInfoResponseDto> resultPage = licenseKeyService.findAllLicense(pageable);
+		List<LicenseInfoResponseDto> result = resultPage.getContent();
 
 		// then: 결과 검증
-		assertEquals(3, result.size());
+		assertEquals(3, resultPage.getTotalElements());
 
 		LicenseInfoResponseDto first = result.get(0);
 		assertEquals("KEY-1", first.getProductKey());
