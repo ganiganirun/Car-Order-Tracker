@@ -20,7 +20,7 @@ public class WaitingJobScheduler {
 		this.jobRegistry = jobRegistry;
 	}
 
-	@Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
+	@Scheduled(cron = "0 */1 * * * *", zone = "Asia/Seoul")
 	public void runCustomJob() throws Exception {
 
 		System.out.println("Wationg schedule start");
