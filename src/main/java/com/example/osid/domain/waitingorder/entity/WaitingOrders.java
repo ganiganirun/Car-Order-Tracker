@@ -37,10 +37,10 @@ public class WaitingOrders extends BaseEntity {
 	private Orders orders;
 
 	@Enumerated(EnumType.STRING)
-	private WaitingStatus watingStatus;
+	private WaitingStatus waitingStatus;
 
 	public WaitingOrders(Orders orders) {
 		this.orders = orders;
-		this.watingStatus = WaitingStatus.WAITING;
+		this.waitingStatus = WaitingStatus.WAITING;
 	}
 }
