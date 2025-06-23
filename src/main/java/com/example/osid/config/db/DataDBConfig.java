@@ -34,10 +34,6 @@ public class DataDBConfig {
 
 	@Bean
 	public LocalContainerEntityManagerFactoryBean dataEntityManager() {
-		// LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-		// em.setDataSource(dataDBSource());
-		// em.setPackagesToScan("com.example.osid.domain");
-		// return em;
 
 		LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
 
@@ -47,10 +43,15 @@ public class DataDBConfig {
 		em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
 		HashMap<String, Object> properties = new HashMap<>();
+		properties.put("hibernate.physical_naming_strategy",
+			"org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
 		properties.put("hibernate.hbm2ddl.auto", "update");
-		properties.put("hibernate.show_sql", "true");
+		// properties.put("hibernate.show_sql", "true");
 		properties.put("hibernate.format_sql", "true");
 		properties.put("hibernate.use_sql_comments", "true");
+		properties.put("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
+		properties.put("hibernate.jdbc.fetch_size", "1000");
+
 		em.setJpaPropertyMap(properties);
 
 		return em;
