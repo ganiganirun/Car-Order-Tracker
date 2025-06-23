@@ -12,7 +12,7 @@ import com.example.osid.domain.order.exception.OrderErrorCode;
 import com.example.osid.domain.order.exception.OrderException;
 import com.example.osid.domain.order.repository.OrderRepository;
 import com.example.osid.domain.waitingorder.entity.WaitingOrders;
-import com.example.osid.domain.waitingorder.repository.WatingOrderRepository;
+import com.example.osid.domain.waitingorder.repository.WaitingOrderRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WatingOrderListener {
 
-	private final WatingOrderRepository watingOrderRepository;
+	private final WaitingOrderRepository watingOrderRepository;
 	private final OrderRepository orderRepository;
 
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
