@@ -21,9 +21,11 @@ import com.example.osid.domain.order.repository.OrderRepository;
 import com.example.osid.domain.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MyCarServiceImpl implements MyCarService {
 
 	private final MycarRepository mycarRepository;
@@ -63,12 +65,8 @@ public class MyCarServiceImpl implements MyCarService {
 	@Transactional
 	public MyCarResponse saveMyCar(Long ordersId) {
 
-		Orders orders = orderRepository.findById(ordersId)
+		Orders orders = orderRepository.findWithOptionsById(ordersId)
 			.orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
-		// // 완료된 주문이 아닐 경우
-		// if (!OrderStatus.COMPLETED.equals(orders.getOrderStatus())) {
-		// 	throw new MyCarException(MyCarErrorCode.ORDER_NOT_COMPLETED);
-		// }
 
 		// 이미 등록된 차량인 경우
 		boolean existsMyCar = mycarRepository.existsByOrdersId(ordersId);
