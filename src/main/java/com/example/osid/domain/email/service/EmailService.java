@@ -4,6 +4,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -27,6 +28,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EmailService {
 
+	@Value("${EMAIL_ADDRESS}")
+	private String fromAddress;
+
 	private final JavaMailSender mailSender;
 	private final OrderRepository orderRepository;
 
@@ -48,7 +52,6 @@ public class EmailService {
 		vars.put("bodyNumber", order.getBodyNumber());
 		vars.put("modelName", order.getModel().getName());
 		vars.put("registeredAt", order.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-		// vars.put("mycarUrl", "https://yourdomain.com/mycar"); // 실제 URL로 대체
 
 		String html = EmailTemplateProcessor.loadTemplate("mailTemplate/OrderCompleteMailForUser.html", vars);
 		String subject = "[OSID] 차량 등록이 완료되었습니다";
@@ -81,8 +84,7 @@ public class EmailService {
 			helper.setTo(to);
 			helper.setSubject(subject);
 			helper.setText(htmlContent, true);
-			helper.setFrom("pr924133@gmail.com"); // 테스트용
-
+			helper.setFrom(fromAddress);
 			mailSender.send(message);
 		} catch (MessagingException e) {
 			log.error("메일 전송 실패: {}", e.getMessage(), e);
