@@ -128,60 +128,6 @@ public class LogAop {
 		logReturnValue(returnObj);
 	}
 
-	// @Before("batchComponentPointcut()")
-	// public void logBatchComponentCall(JoinPoint joinPoint) {
-	// 	log.info("[batch] Method called: {}", joinPoint.getSignature());
-	// }
-	//
-	// @Before("servicePointcut()")
-	// public void serviceLogMethodCall(JoinPoint joinPoint) {
-	// 	Method method = getMethod(joinPoint);
-	// 	// 메소드 진입 시 메소드 이름을 로깅
-	// 	log.info("===== [service] Entering method: {} =====", method.getName());
-	// 	// 메소드 파라미터를 로깅
-	// 	logParameters(joinPoint);
-	// }
-	//
-	// // AfterReturning 어드바이스: 메소드가 값을 반환한 후 실행되며, 지정된 Pointcut에 해당하는 메소드에서 작동
-	// @AfterReturning(value = "servicePointcut()", returning = "returnObj")
-	// public void serviceLogMethodReturn(JoinPoint joinPoint, Object returnObj) {
-	// 	Method method = getMethod(joinPoint);
-	// 	// 메소드 반환 시 메소드 이름을 로깅
-	// 	log.info("===== [service] Returning method: {} =====", method.getName());
-	// 	// 반환된 값의 타입과 값을 로깅
-	// 	logReturnValue(returnObj);
-	// }
-	//
-	// @Before("controllerPointcut()")
-	// public void controllerLogMethodCall(JoinPoint joinPoint) {
-	// 	Method method = getMethod(joinPoint);
-	// 	// 메소드 진입 시 메소드 이름을 로깅
-	// 	log.info("===== [controller] Entering method: {} =====", method.getName());
-	// 	// 메소드 파라미터를 로깅
-	// 	logParameters(joinPoint);
-	// }
-	//
-	// // AfterReturning 어드바이스: 메소드가 값을 반환한 후 실행되며, 지정된 Pointcut에 해당하는 메소드에서 작동
-	// @AfterReturning(value = "controllerPointcut()", returning = "returnObj")
-	// public void controllerLogMethodReturn(JoinPoint joinPoint, Object returnObj) {
-	// 	Method method = getMethod(joinPoint);
-	// 	// 메소드 반환 시 메소드 이름을 로깅
-	// 	log.info("===== [controller] Returning method: {} =====", method.getName());
-	// 	// 반환된 값의 타입과 값을 로깅
-	// 	logReturnValue(returnObj);
-	// }
-	//
-	// @Around("servicePointcut() || controllerPointcut()")
-	// public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
-	// 	long start = System.currentTimeMillis();
-	// 	try {
-	// 		return joinPoint.proceed();
-	// 	} finally {
-	// 		long end = System.currentTimeMillis();
-	// 		log.info("Executed {} in {}ms", joinPoint.getSignature(), end - start);
-	// 	}
-	// }
-
 	// JoinPoint에서 메소드 정보를 추출하는 메소드
 	private Method getMethod(JoinPoint joinPoint) {
 		MethodSignature signature = (MethodSignature)joinPoint.getSignature();
