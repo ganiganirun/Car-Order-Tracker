@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>고객 차량 등록 알림</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet">
+</head>
+<body style="font-family: 'Noto Sans', sans-serif; background-color: #f3f3f3; padding: 20px;">
+<div style="max-width: 600px; margin: auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px #ccc;">
+    <h2 style="color: #34495e;">📢 고객 차량이 등록되었습니다</h2>
+    <p><strong>{{딜러이름}}</strong> 님, 담당하신 고객의 차량이 성공적으로 등록되었습니다.</p>
+
+    <hr style="margin: 20px 0;">
+
+    <p><strong>고객 이름:</strong> {{고객이름}}</p>
+    <p><strong>차량 넘버:</strong> {{bodyNumber}}</p>
+    <p><strong>차량 모델:</strong> {{modelName}}</p>
+    <p><strong>등록 일시:</strong> {{registeredAt}}</p>
+
+    <hr style="margin: 20px 0;">
+
+    <p>딜러 관리 시스템에서 고객 정보를 확인하고 후속 관리를 진행해 주세요.</p>
+
+    <p style="margin-top: 30px; font-size: 0.9em; color: #999;">
+        이 메일은 시스템에 의해 자동 발송되었습니다.
+    </p>
+</div>
+</body>
+</html>

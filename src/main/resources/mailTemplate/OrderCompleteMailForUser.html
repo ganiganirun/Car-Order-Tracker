@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>차량 등록 완료 안내</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet">
+</head>
+<body style="font-family: 'Noto Sans', sans-serif; background-color: #f3f3f3; padding: 20px;">
+<div style="max-width: 600px; margin: auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px #ddd;">
+    <h2 style="color: #2c3e50;">🚗 차량 등록이 완료되었습니다</h2>
+    <p>안녕하세요, <strong>{{고객이름}}</strong>님.</p>
+    <p>주문하신 차량이 정상적으로 등록되어 <strong>내 차량(MyCar)</strong>에 추가되었습니다.</p>
+
+    <hr style="margin: 20px 0;">
+
+    <p><strong>차량 넘버:</strong> {{bodyNumber}}</p>
+    <p><strong>차량 모델:</strong> {{modelName}}</p>
+    <p><strong>등록 일시:</strong> {{registeredAt}}</p>
+
+    <hr style="margin: 20px 0;">
+
+    <!--    <p>언제든지 <a href="{{mycarUrl}}" style="color: #3498db;">내 차량 보기</a>를 통해 차량 정보를 확인하실 수 있습니다.</p>-->
+
+    <p style="margin-top: 30px; font-size: 0.9em; color: #888;">
+        본 메일은 발신 전용입니다. 궁금하신 사항은 고객센터로 문의해주세요.
+    </p>
+</div>
+</body>
+</html>
