@@ -104,4 +104,14 @@ public class OrderController {
 		return CommonResponse.ok();
 	}
 
+	// 차량 출고 완료
+	@PatchMapping("/api/dealers/order/{orderId}")
+	@ResponseStatus(HttpStatus.OK)
+	public CommonResponse<Void> changeShipped(
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable Long orderId
+	) {
+		orderService.changeShipped(customUserDetails, orderId);
+	}
+
 }

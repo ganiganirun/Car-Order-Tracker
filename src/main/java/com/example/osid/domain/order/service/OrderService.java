@@ -52,6 +52,7 @@ import com.example.osid.domain.user.exception.UserErrorCode;
 import com.example.osid.domain.user.exception.UserException;
 import com.example.osid.domain.user.repository.UserRepository;
 import com.example.osid.domain.waitingorder.entity.WaitingOrders;
+import com.example.osid.domain.waitingorder.enums.WaitingStatus;
 import com.example.osid.domain.waitingorder.exception.WaitingOrderErrorCode;
 import com.example.osid.domain.waitingorder.exception.WaitingOrderException;
 import com.example.osid.domain.waitingorder.repository.WaitingOrderRepository;
@@ -131,25 +132,27 @@ public class OrderService {
 
 		orders.setOrderOptions(orderOptions);
 
-		orderRepository.save(orders);
+		Orders saveorder = orderRepository.save(orders);
 
 		// Option 이름만 리스트화
-		List<String> optionNames = options
-			.stream()
-			.map(Option::getName)
-			.toList();
+		// List<String> optionNames = options
+		// 	.stream()
+		// 	.map(Option::getName)
+		// 	.toList();
+
+		List<String> optionNames = changeOptions(saveorder);
 
 		return OrderResponseDto.Add.builder()
-			.id(orders.getId())
-			.model(orders.getModel().getName())
-			.userId(orders.getUser().getId())
-			.dealerName(orders.getDealer().getName())
+			.id(saveorder.getId())
+			.model(saveorder.getModel().getName())
+			.userId(saveorder.getUser().getId())
+			.dealerName(saveorder.getDealer().getName())
 			.orderOptions(optionNames)
-			.merchantUid(orders.getMerchantUid())
-			.address(orders.getAddress())
-			.totalPrice(orders.getTotalPrice())
-			.orderStatus(orders.getOrderStatus())
-			.createdAt(orders.getCreatedAt())
+			.merchantUid(saveorder.getMerchantUid())
+			.address(saveorder.getAddress())
+			.totalPrice(saveorder.getTotalPrice())
+			.orderStatus(saveorder.getOrderStatus())
+			.createdAt(saveorder.getCreatedAt())
 			.build();
 
 	}
@@ -167,21 +170,6 @@ public class OrderService {
 
 		if (requestDto.getAddress().isPresent()) {
 			orders.setAddress(requestDto.getAddress().get());
-		}
-
-		// 주문 상태 수정
-		if (requestDto.getOrderStatus() != null) {
-			orders.setOrderStatus(requestDto.getOrderStatus());
-		}
-
-		// 예상 출고일 수정
-		if (requestDto.getExpectedDeliveryAt().isPresent()) {
-			orders.setExpectedDeliveryAt(requestDto.getExpectedDeliveryAt().get());
-		}
-
-		// 실제 출고일 수정
-		if (requestDto.getActualDeliveryAt().isPresent()) {
-			orders.setActualDeliveryAt(requestDto.getActualDeliveryAt().get());
 		}
 
 		if (Objects.equals(requestDto.getOrderStatus(), OrderStatus.COMPLETED)) {
@@ -221,11 +209,21 @@ public class OrderService {
 	// 주문 취소
 	@Transactional
 	public void cancelOrder(Long orderId) {
-		Orders order = orderRepository.findById(orderId)
-			.orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
+
+		Orders order = extractOrder(orderId);
+
+		WaitingOrders waitingOrders = waitingOrderRepository.findByOrders(order)
+			.orElseThrow(() -> new WaitingOrderException(WaitingOrderErrorCode.WAITING_ORDER_NOT_FOUND));
+
+		// 대기열의 상태가 Waiting이 아니면 주문 취소 불가능
+		if (!waitingOrders.getWaitingStatus().equals(WaitingStatus.WAITING)) {
+			throw new OrderException(OrderErrorCode.ORDER_CANCELLATION_NOT_ALLOWED);
+		}
+
 		order.setOrderStatus(OrderStatus.FAILED);
 	}
 
+	// 주문 단건조회
 	public OrderDetailResponse findOrder(CustomUserDetails customUserDetails, Long orderId) {
 
 		// 예외처리 refactor
@@ -244,60 +242,6 @@ public class OrderService {
 
 		return OrderDetailResponse.of(orders, processSteps);
 
-		// // role 에 따라 다른 값 return
-		// switch (role) {
-		// 	case USER -> {
-		// 		return OrderResponseDto.UserView.builder()
-		// 			.id(orders.getId())
-		// 			.userName(orders.getUser().getName())
-		// 			.dealerName(orders.getDealer().getName())
-		// 			.model(orders.getModel().getName())
-		// 			.orderOptions(optionNames)
-		// 			.address(orders.getAddress())
-		// 			.totalPrice(orders.getTotalPrice())
-		// 			.merchantUid(orders.getMerchantUid())
-		// 			.orderStatus(orders.getOrderStatus())
-		// 			.expectedDeliveryAt(orders.getExpectedDeliveryAt())
-		// 			.actualDeliveryAt(orders.getActualDeliveryAt())
-		// 			.createdAt(orders.getCreatedAt())
-		// 			.build();
-		// 	}
-		// 	case DEALER -> {
-		// 		return OrderResponseDto.AdminView.builder()
-		// 			.id(orders.getId())
-		// 			.userName(orders.getUser().getName())
-		// 			.dealerName(orders.getDealer().getName())
-		// 			.model(orders.getModel().getName())
-		// 			.orderOptions(optionNames)
-		// 			.address(orders.getAddress())
-		// 			.totalPrice(orders.getTotalPrice())
-		// 			.merchantUid(orders.getMerchantUid())
-		// 			.orderStatus(orders.getOrderStatus())
-		// 			.expectedDeliveryAt(orders.getExpectedDeliveryAt())
-		// 			.actualDeliveryAt(orders.getActualDeliveryAt())
-		// 			.createdAt(orders.getCreatedAt())
-		// 			.build();
-		// 	}
-		// 	case MASTER -> {
-		// 		// 마스터는 모든 주문에 대해서 조회 가능
-		// 		return OrderResponseDto.AdminView.builder()
-		// 			.id(orders.getId())
-		// 			.model(orders.getModel().getName())
-		// 			.userName(orders.getUser().getName())
-		// 			.dealerName(orders.getDealer().getName())
-		// 			.orderOptions(optionNames)
-		// 			.address(orders.getAddress())
-		// 			.totalPrice(orders.getTotalPrice())
-		// 			.merchantUid(orders.getMerchantUid())
-		// 			.orderStatus(orders.getOrderStatus())
-		// 			.expectedDeliveryAt(orders.getExpectedDeliveryAt())
-		// 			.actualDeliveryAt(orders.getActualDeliveryAt())
-		// 			.createdAt(orders.getCreatedAt())
-		// 			.build();
-		// 	}
-		//
-		// }
-
 	}
 
 	// 주문 전체 조회
@@ -310,7 +254,7 @@ public class OrderService {
 		if (role.equals(Role.MASTER)) {
 
 			// 자기가 관리하는 딜러의 주문건만 조회 가능하도록 수정
-			Master master = masterRepository.findById(customUserDetails.getId())
+			Master master = masterRepository.findByEmailAndIsDeletedFalse(customUserDetails.getEmail())
 				.orElseThrow(() -> new MasterException(MasterErrorCode.MASTER_NOT_FOUND));
 
 			List<Long> dealerIds = dealerRepository.findByMasterAndIsDeletedFalse(master)
@@ -342,6 +286,7 @@ public class OrderService {
 	}
 
 	// 주문 삭제
+	@Transactional
 	public void deleteOrder(CustomUserDetails customUserDetails, Long orderId) {
 
 		// 예외처리 refactor
@@ -351,6 +296,20 @@ public class OrderService {
 		validateOrderOwner(orders, customUserDetails, extractRole(customUserDetails));
 
 		orderRepository.delete(orders);
+
+	}
+
+	// 출고완료 상태 변경 및 출고완료일 날짜 생성
+	@Transactional
+	public void changeShipped(CustomUserDetails customUserDetails, Long orderId) {
+
+		Orders orders = extractOrder(orderId);
+
+		validateOrderOwner(orders, customUserDetails, extractRole(customUserDetails));
+
+		orders.setOrderStatus(OrderStatus.SHIPPED);
+
+		orders.setActualDeliveryAt(LocalDateTime.now());
 
 	}
 
@@ -418,6 +377,7 @@ public class OrderService {
 
 	}
 
+	// processStep을 빌드하는 메소드
 	private List<OrderDetailResponse.ProcessStep> buildProcessSteps(Role role, Orders orders) {
 		WaitingOrders waitingOrders = waitingOrderRepository.findByOrders(orders)
 			.orElseThrow(() -> new WaitingOrderException(WaitingOrderErrorCode.WAITING_ORDER_NOT_FOUND));
@@ -512,4 +472,5 @@ public class OrderService {
 	}
 
 }
+
 
