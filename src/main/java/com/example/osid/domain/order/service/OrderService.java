@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -172,21 +171,6 @@ public class OrderService {
 			orders.setAddress(requestDto.getAddress().get());
 		}
 
-		if (Objects.equals(requestDto.getOrderStatus(), OrderStatus.COMPLETED)) {
-			// 주문 완료 이벤트 메시지 생성
-			OrderCompletedMyCarEvent event = new OrderCompletedMyCarEvent(orderId);
-			try {
-				//메시지 큐로 전송
-				orderEventPublisher.publishOrderCompletedMyCar(event);
-			} catch (Exception e) {
-				// 실패 이벤트 저장
-				failedEventRepository.save(
-					new FailedEvent(event.getOrderId(),
-						0,
-						e.getMessage(),
-						FailedEventType.MY_CAR));
-			}
-		}
 		// List<Option> -> List<String>
 		List<String> optionNames = changeOptions(orders);
 
@@ -310,6 +294,20 @@ public class OrderService {
 		orders.setOrderStatus(OrderStatus.SHIPPED);
 
 		orders.setActualDeliveryAt(LocalDateTime.now());
+
+		// 주문 완료 이벤트 메시지 생성
+		OrderCompletedMyCarEvent event = new OrderCompletedMyCarEvent(orderId);
+		try {
+			//메시지 큐로 전송
+			orderEventPublisher.publishOrderCompletedMyCar(event);
+		} catch (Exception e) {
+			// 실패 이벤트 저장
+			failedEventRepository.save(
+				new FailedEvent(event.getOrderId(),
+					0,
+					e.getMessage(),
+					FailedEventType.MY_CAR));
+		}
 
 	}
 
