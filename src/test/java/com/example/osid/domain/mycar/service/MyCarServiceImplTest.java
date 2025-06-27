@@ -197,7 +197,7 @@ class MyCarServiceImplTest {
 	@DisplayName("이미 등록된 차량 등록시 에러 출력")
 	void createMyCar_Error() {
 
-		given(orderRepository.findById(orders.getId())).willReturn(Optional.of(orders));
+		given(orderRepository.findWithOptionsById(orders.getId())).willReturn(Optional.of(orders));
 		given(mycarRepository.existsByOrdersId(orders.getId())).willReturn(true);
 
 		MyCarException ex = assertThrows(MyCarException.class, () -> {
@@ -208,16 +208,4 @@ class MyCarServiceImplTest {
 
 	}
 
-	// @Test
-	// @DisplayName("주문 완료가 아닌 차량 등록시 에러 발생")
-	// void createMyCar_Error2() {
-	//
-	// 	given(orderRepository.findById(orders2.getId())).willReturn(Optional.of(orders2));
-	//
-	// 	MyCarException ex = assertThrows(MyCarException.class, () -> {
-	// 		myCarService.saveMyCar(orders2.getId());
-	// 	});
-	//
-	// 	assertEquals(MyCarErrorCode.ORDER_NOT_COMPLETED, ex.getBaseCode());
-	// }
 }
