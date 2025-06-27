@@ -311,6 +311,19 @@ public class OrderService {
 
 	}
 
+	// 수령 완료 상태 변경
+	@Transactional
+	public void changeReceived(CustomUserDetails customUserDetails, Long orderId) {
+
+		Orders orders = extractOrder(orderId);
+
+		validateOrderOwner(orders, customUserDetails, extractRole(customUserDetails));
+
+		orders.setOrderStatus(OrderStatus.RECEIVED);
+
+		orders.setReceivedAt(LocalDateTime.now());
+	}
+
 	// role 가져오기
 	private Role extractRole(CustomUserDetails customUserDetails) {
 
@@ -410,6 +423,11 @@ public class OrderService {
 				orders.getActualDeliveryAt(),
 				orders.getActualDeliveryAt()
 			));
+			steps.add(OrderDetailResponse.ProcessStep.from(
+				"수령 완료",
+				orders.getReceivedAt(),
+				orders.getReceivedAt()
+			));
 
 			return steps;
 
@@ -454,6 +472,11 @@ public class OrderService {
 			"출고 완료",
 			orders.getActualDeliveryAt(),
 			orders.getActualDeliveryAt()
+		));
+		steps.add(OrderDetailResponse.ProcessStep.from(
+			"수령 완료",
+			orders.getReceivedAt(),
+			orders.getReceivedAt()
 		));
 
 		return steps;

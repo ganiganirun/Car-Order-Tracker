@@ -66,6 +66,9 @@ public class Orders extends BaseEntity {
 	@Column(name = "actual_delivery_date")
 	private LocalDateTime actualDeliveryAt; // 실제 출고일
 
+	@Column(name = "received_at")
+	private LocalDateTime receivedAt; // 차량 수령일
+
 	@ManyToOne
 	private User user; // 유저 정보
 
