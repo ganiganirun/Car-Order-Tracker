@@ -20,19 +20,19 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Component
 @Slf4j
-public class WatingOrderListener {
+public class WaitingOrderListener {
 
-	private final WaitingOrderRepository watingOrderRepository;
+	private final WaitingOrderRepository waitingOrderRepository;
 	private final OrderRepository orderRepository;
 
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	@Transactional(transactionManager = "dataTransactionManager", propagation = Propagation.REQUIRES_NEW)
-	public void handleWatingOrderSaved(OrderPaidEvent event) {
+	public void handleWaitingOrderSaved(OrderPaidEvent event) {
 
 		Orders orders = orderRepository.findById(event.getOrderId())
 			.orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
 
-		WaitingOrders save = watingOrderRepository.save(new WaitingOrders(orders));
+		WaitingOrders save = waitingOrderRepository.save(new WaitingOrders(orders));
 
 		log.info("save WatinOrders id : {}, orderId : {}, date : {}", save.getId(), save.getOrders().getId(),
 			save.getCreatedAt());
