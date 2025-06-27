@@ -32,7 +32,7 @@ public class LicenseKeyService {
 	private final LicenseKeyRepository licenseKeyRepository;
 	private final MasterRepository masterRepository;
 
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public String assignLicense(Long ownerId) {
 		// 1) 기존에 할당된 키가 있으면 해제
 		licenseKeyRepository
@@ -69,7 +69,7 @@ public class LicenseKeyService {
 	}
 
 	// Key 취소
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public void revoke(String productKey) {
 		licenseKeyRepository.findByProductKeyAndLicenseStatus(productKey, LicenseStatus.ASSIGNED)
 			.ifPresentOrElse(
@@ -114,7 +114,7 @@ public class LicenseKeyService {
 	}
 
 	/** 기존키를 ownerId에 할당(가입 시) */
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public void assignExistingKey(String productKey, Long ownerId) {
 		LicenseKey key = licenseKeyRepository.findByProductKeyAndLicenseStatus(productKey, LicenseStatus.AVAILABLE)
 			// 사용 가능하지 않은 키(존재하지 않거나 이미 할당/취소됨)인 경우

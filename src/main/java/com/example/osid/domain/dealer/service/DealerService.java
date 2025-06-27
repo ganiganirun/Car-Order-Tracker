@@ -2,6 +2,7 @@ package com.example.osid.domain.dealer.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.osid.common.auth.CustomUserDetails;
 import com.example.osid.common.auth.EmailValidator;
@@ -23,7 +24,6 @@ import com.example.osid.domain.master.exception.MasterException;
 import com.example.osid.domain.master.repository.MasterRepository;
 import com.example.osid.domain.user.repository.UserRepository;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -70,7 +70,7 @@ public class DealerService {
 		);
 	}
 
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public void updatedDealer(
 		CustomUserDetails customUserDetails,
 		DealerUpdatedRequestDto dealerUpdatedRequestDto
@@ -79,7 +79,7 @@ public class DealerService {
 		dealer.updatedDealer(dealerUpdatedRequestDto);
 	}
 
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public void deletedDealer(
 		CustomUserDetails customUserDetails,
 		DealerDeletedRequestDto dealerDeletedRequestDto
@@ -97,7 +97,7 @@ public class DealerService {
 		dealer.softDeletedDealer();
 	}
 
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public void updatedRoleChangeDealer(
 		CustomUserDetails customUserDetails,
 		DealerRoleChangeRequestDto dealerRoleChangeRequestDto
@@ -123,7 +123,7 @@ public class DealerService {
 
 	}
 
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public void updatedBranchChangeDealer(
 		CustomUserDetails customUserDetails,
 		DealerBranchChangeRequestDto dealerBranchChangeRequestDto
