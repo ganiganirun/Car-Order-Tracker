@@ -57,7 +57,7 @@ public class DataDBConfig {
 		return em;
 	}
 
-	@Bean
+	@Bean(name = "dataTransactionManager")
 	public PlatformTransactionManager dataTransactionManager() {
 
 		JpaTransactionManager transactionManager = new JpaTransactionManager();
