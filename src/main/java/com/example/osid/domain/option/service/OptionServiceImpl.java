@@ -25,7 +25,7 @@ public class OptionServiceImpl implements OptionService {
 	private final OptionRepository optionRepository;
 
 	@Override
-	@Transactional
+	@Transactional(value = "dataTransactionManager")
 	@PreAuthorize("hasRole('MASTER')")
 	public void createOption(OptionRequest request) {
 		Option option = new Option(request.getName(), request.getDescription(), request.getImage(),
@@ -34,14 +34,14 @@ public class OptionServiceImpl implements OptionService {
 	}
 
 	@Override
-	@Transactional(readOnly = true)
+	@Transactional(value = "dataTransactionManager", readOnly = true)
 	public OptionResponse findOption(Long optionId) {
 		Option option = findActiveOption(optionId);
 		return OptionResponse.from(option);
 	}
 
 	@Override
-	@Transactional(readOnly = true)
+	@Transactional(value = "dataTransactionManager", readOnly = true)
 	@Cacheable(cacheNames = "options", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
 	public Page<OptionResponse> findAllOption(Pageable pageable) {
 		Page<Option> optionList = optionRepository.findAllByDeletedAtIsNull(pageable);
@@ -49,7 +49,7 @@ public class OptionServiceImpl implements OptionService {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(value = "dataTransactionManager")
 	@PreAuthorize("hasRole('MASTER')")
 	public OptionResponse updateOption(Long optionId, OptionUpdateRequest request) {
 		Option option = findActiveOption(optionId);
@@ -59,7 +59,7 @@ public class OptionServiceImpl implements OptionService {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(value = "dataTransactionManager")
 	@PreAuthorize("hasRole('MASTER')")
 	public void deleteOption(Long optionId) {
 		Option option = findActiveOption(optionId);
@@ -68,7 +68,7 @@ public class OptionServiceImpl implements OptionService {
 
 	//master 전용 옵션 단건 조회
 	@Override
-	@Transactional(readOnly = true)
+	@Transactional(value = "dataTransactionManager", readOnly = true)
 	@PreAuthorize("hasRole('MASTER')")
 	public OptionMasterResponse findOptionForMaster(Long modelId) {
 		Option option = optionRepository.findById(modelId)
@@ -78,7 +78,7 @@ public class OptionServiceImpl implements OptionService {
 
 	//master 전용 옵션 전체 조회
 	@Override
-	@Transactional(readOnly = true)
+	@Transactional(value = "dataTransactionManager", readOnly = true)
 	@PreAuthorize("hasRole('MASTER')")
 	public Page<OptionMasterResponse> findAllOptionForMaster(Pageable pageable, String deletedFilter) {
 
