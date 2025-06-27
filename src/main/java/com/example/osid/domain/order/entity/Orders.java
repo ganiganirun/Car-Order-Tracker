@@ -10,6 +10,7 @@ import com.example.osid.domain.model.entity.Model;
 import com.example.osid.domain.order.enums.OrderStatus;
 import com.example.osid.domain.payment.entity.Payments;
 import com.example.osid.domain.user.entity.User;
+import com.example.osid.domain.waitingorder.entity.WaitingOrders;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -82,6 +83,23 @@ public class Orders extends BaseEntity {
 	@JsonManagedReference
 	private List<OrderOption> orderOptions; // 옵션 정보
 
+	// 1:1 WaitingOrders (양방향)
+	@OneToOne(
+		mappedBy = "orders",
+		cascade = CascadeType.ALL,
+		orphanRemoval = true,
+		fetch = FetchType.LAZY
+	)
+	private WaitingOrders waitingOrders;
+
+	@OneToOne(
+		cascade = CascadeType.MERGE,
+		orphanRemoval = true,
+		fetch = FetchType.LAZY
+	)
+	@JoinColumn(name = "payment_id")
+	private Payments payments;
+
 	// 주문 저장 직전에 자동 생성
 	@PrePersist
 	public void prePersist() {
@@ -92,9 +110,5 @@ public class Orders extends BaseEntity {
 			this.bodyNumber = "car_" + UUID.randomUUID().toString();
 		}
 	}
-
-	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	@JoinColumn(name = "payment_id")
-	private Payments payments;
 
 }
