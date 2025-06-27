@@ -156,7 +156,7 @@ public class OrderService {
 	}
 
 	// 주문 수정
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public OrderResponseDto.Update updateOrder(CustomUserDetails customUserDetails, Long orderId,
 		OrderRequestDto.Update requestDto) {
 
@@ -190,7 +190,7 @@ public class OrderService {
 	}
 
 	// 주문 취소 -> 결제가 제대로 진행되지 않았을 경우에만
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public void cancelOrder(Long orderId) {
 
 		Orders order = extractOrder(orderId);
@@ -274,7 +274,7 @@ public class OrderService {
 	}
 
 	// 주문 삭제
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public void deleteOrder(CustomUserDetails customUserDetails, Long orderId) {
 
 		// 예외처리 refactor
@@ -296,7 +296,7 @@ public class OrderService {
 	}
 
 	// 출고완료 상태 변경 및 출고완료일 날짜 생성
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public void changeShipped(CustomUserDetails customUserDetails, Long orderId) {
 
 		Orders orders = extractOrder(orderId);
@@ -307,7 +307,7 @@ public class OrderService {
 
 		orders.setActualDeliveryAt(LocalDateTime.now());
 
-		orderRepository.save(orders);
+		// orderRepository.save(orders);
 
 		// 주문 완료 이벤트 메시지 생성
 		OrderCompletedMyCarEvent event = new OrderCompletedMyCarEvent(orderId);
@@ -326,7 +326,7 @@ public class OrderService {
 	}
 
 	// 수령 완료 상태 변경
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public void changeReceived(CustomUserDetails customUserDetails, Long orderId) {
 
 		Orders orders = extractOrder(orderId);
@@ -337,7 +337,7 @@ public class OrderService {
 
 		orders.setReceivedAt(LocalDateTime.now());
 
-		orderRepository.save(orders);
+		// orderRepository.save(orders);
 
 	}
 
