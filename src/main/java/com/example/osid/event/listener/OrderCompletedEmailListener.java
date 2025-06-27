@@ -42,14 +42,25 @@ public class OrderCompletedEmailListener {
 				sendToDlq(event);
 			} else {
 				event.setRetryCount(nextRetry);
-				resendToQueue(event);
+				sendToDelayQueue(event);
 			}
 		}
 	}
 
-	private void resendToQueue(OrderCompletedEmailEvent event) {
-		log.info("이메일 재시도 메시지 전송: orderId={}, retryCount={}", event.getOrderId(), event.getRetryCount());
-		rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.EMAIL_ROUTING_KEY, event);
+	// 실패한 이메일 즉시 재시도
+	// private void resendToQueue(OrderCompletedEmailEvent event) {
+	// 	log.info("이메일 재시도 메시지 전송: orderId={}, retryCount={}", event.getOrderId(), event.getRetryCount());
+	// 	rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.EMAIL_ROUTING_KEY, event);
+	// }
+
+	// 실패한 이메일 retry queue로 전송
+	private void sendToDelayQueue(OrderCompletedEmailEvent event) {
+		log.warn("이메일 재시도 메시지 전송: orderId={}, retryCount={}", event.getOrderId(), event.getRetryCount());
+		rabbitTemplate.convertAndSend(
+			RabbitMQConfig.EXCHANGE,  // 지연 큐 전용 익스체인지
+			RabbitMQConfig.EMAIL_DELAY_ROUTING_KEY,
+			event
+		);
 	}
 
 	private void sendToDlq(OrderCompletedEmailEvent event) {

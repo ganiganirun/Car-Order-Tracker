@@ -34,7 +34,7 @@ public class MyCarServiceImpl implements MyCarService {
 
 	//myCar 단일 조회 (모델명, body number, 주문 옵션 list)
 	@Override
-	@Transactional(readOnly = true)
+	@Transactional(value = "dataTransactionManager", readOnly = true)
 	public MyCarResponse findMyCar(CustomUserDetails customUserDetails, Long myCarId) {
 		Mycar mycar = findMyCarOrElseThrow(myCarId);
 		Long userId = customUserDetails.getId();
@@ -44,7 +44,7 @@ public class MyCarServiceImpl implements MyCarService {
 
 	//myCar 전체조회 (mycar 모델명)
 	@Override
-	@Transactional(readOnly = true)
+	@Transactional(value = "dataTransactionManager", readOnly = true)
 	public Page<MyCarListResponse> findAllMyCar(CustomUserDetails customUserDetails, Pageable pageable) {
 		Long userId = customUserDetails.getId();
 		Page<Mycar> myCarList = mycarRepository.findAllByUserIdAndDeletedAtIsNull(userId, pageable);
@@ -53,7 +53,7 @@ public class MyCarServiceImpl implements MyCarService {
 
 	//myCar 삭제(soft deleted)
 	@Override
-	@Transactional
+	@Transactional(value = "dataTransactionManager")
 	public void deleteMyCar(CustomUserDetails customUserDetails, Long myCarId) {
 		Long userId = customUserDetails.getId();
 		Mycar mycar = findMyCarOrElseThrow(myCarId);
@@ -62,7 +62,7 @@ public class MyCarServiceImpl implements MyCarService {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(value = "dataTransactionManager")
 	public MyCarResponse saveMyCar(Long ordersId) {
 
 		Orders orders = orderRepository.findWithOptionsById(ordersId)

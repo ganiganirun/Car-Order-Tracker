@@ -31,6 +31,10 @@ public class RabbitMQConfig {
 	public static final String EMAIL_DLX = "dlx.email.exchange";
 	public static final String EMAIL_DLQ_ROUTING_KEY = "order.completed.email.dlq";
 
+	// 메일 지연 큐 (실패시 재시도 용도)
+	public static final String EMAIL_DELAY_QUEUE = "order.completed.email.retry.queue";
+	public static final String EMAIL_DELAY_ROUTING_KEY = "order.completed.email.retry";
+
 	@Bean
 	public DirectExchange orderExchange() {
 		return new DirectExchange(EXCHANGE);
@@ -62,6 +66,16 @@ public class RabbitMQConfig {
 		return QueueBuilder.durable(EMAIL_QUEUE)
 			.withArgument("x-dead-letter-exchange", EMAIL_DLX)
 			.withArgument("x-dead-letter-routing-key", EMAIL_DLQ_ROUTING_KEY)
+			.build();
+	}
+
+	// 출고 메일 발송 실패시 재시도
+	@Bean
+	public Queue emailRetryQueue() {
+		return QueueBuilder.durable(EMAIL_DELAY_QUEUE)
+			.withArgument("x-dead-letter-exchange", EXCHANGE)
+			.withArgument("x-dead-letter-routing-key", EMAIL_ROUTING_KEY)
+			.withArgument("x-message-ttl", 5000) // 5초 delay
 			.build();
 	}
 
@@ -106,5 +120,13 @@ public class RabbitMQConfig {
 			.bind(emailDlqQueue())
 			.to(emailDlxExchange())
 			.with(EMAIL_DLQ_ROUTING_KEY);
+	}
+
+	@Bean
+	public Binding emailDelayBinding() {
+		return BindingBuilder
+			.bind(emailRetryQueue())
+			.to(orderExchange())
+			.with(EMAIL_DELAY_ROUTING_KEY);
 	}
 }

@@ -26,7 +26,7 @@ public class ModelServiceImpl implements ModelService {
 
 	//모델 생성
 	@Override
-	@Transactional
+	@Transactional("dataTransactionManager")
 	@PreAuthorize("hasRole('MASTER')")
 	public void createModel(ModelCreateRequest request) {
 		Model model = new Model(request.getName(), request.getColor(), request.getDescription(), request.getImage(),
@@ -38,7 +38,7 @@ public class ModelServiceImpl implements ModelService {
 
 	//모델 단건 조회
 	@Override
-	@Transactional(readOnly = true)
+	@Transactional(value = "dataTransactionManager", readOnly = true)
 	public ModelResponse findModel(Long modelId) {
 
 		Model model = findActiveModel(modelId);
@@ -47,7 +47,7 @@ public class ModelServiceImpl implements ModelService {
 
 	//모델 전체 조회
 	@Override
-	@Transactional(readOnly = true)
+	@Transactional(value = "dataTransactionManager", readOnly = true)
 	@Cacheable(cacheNames = "models", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
 	public Page<ModelResponse> findAllModel(Pageable pageable) {
 
@@ -57,7 +57,7 @@ public class ModelServiceImpl implements ModelService {
 
 	//모델 수정
 	@Override
-	@Transactional
+	@Transactional("dataTransactionManager")
 	@PreAuthorize("hasRole('MASTER')")
 	public ModelResponse updateModel(Long modelId, ModelUpdateRequest request) {
 
@@ -69,7 +69,7 @@ public class ModelServiceImpl implements ModelService {
 
 	//모델 삭제 조회
 	@Override
-	@Transactional
+	@Transactional("dataTransactionManager")
 	@PreAuthorize("hasRole('MASTER')")
 	public void deleteModel(Long modelId) {
 		Model model = findActiveModel(modelId);
@@ -78,7 +78,7 @@ public class ModelServiceImpl implements ModelService {
 
 	//master 전용 모델 단건 조회
 	@Override
-	@Transactional(readOnly = true)
+	@Transactional(value = "dataTransactionManager", readOnly = true)
 	@PreAuthorize("hasRole('MASTER')")
 	public ModelMasterResponse findModelForMaster(Long modelId) {
 		Model model = modelRepository.findById(modelId)
@@ -88,7 +88,7 @@ public class ModelServiceImpl implements ModelService {
 
 	//master 전용 모델 전체 조회
 	@Override
-	@Transactional(readOnly = true)
+	@Transactional(value = "dataTransactionManager", readOnly = true)
 	@PreAuthorize("hasRole('MASTER')")
 	public Page<ModelMasterResponse> findAllModelForMaster(Pageable pageable, String deletedFilter) {
 
