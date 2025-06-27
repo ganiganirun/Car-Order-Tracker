@@ -3,6 +3,7 @@ package com.example.osid.domain.order.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -21,8 +22,6 @@ import com.example.osid.domain.dealer.exception.DealerErrorCode;
 import com.example.osid.domain.dealer.exception.DealerException;
 import com.example.osid.domain.dealer.repository.DealerRepository;
 import com.example.osid.domain.history.entity.History;
-import com.example.osid.domain.history.exception.HistoryErrorCode;
-import com.example.osid.domain.history.exception.HistoryException;
 import com.example.osid.domain.history.repository.HistoryRepository;
 import com.example.osid.domain.master.entity.Master;
 import com.example.osid.domain.master.exception.MasterErrorCode;
@@ -190,7 +189,7 @@ public class OrderService {
 
 	}
 
-	// 주문 취소
+	// 주문 취소 -> 결제가 제대로 진행되지 않았을 경우에만
 	@Transactional
 	public void cancelOrder(Long orderId) {
 
@@ -222,7 +221,12 @@ public class OrderService {
 		// 검증
 		validateOrderOwner(orders, customUserDetails, role);
 
-		List<OrderDetailResponse.ProcessStep> processSteps = buildProcessSteps(role, orders);
+		// List<OrderDetailResponse.ProcessStep> processSteps = buildProcessSteps(role, orders);
+
+		// 생산에 들어가지 않을 경우 processStep은 빈 리스트 반환
+		List<OrderDetailResponse.ProcessStep> processSteps = historyRepository.findByBodyNumber(orders.getBodyNumber())
+			.map(h -> buildProcessSteps(role, orders, h))
+			.orElse(Collections.emptyList());
 
 		return OrderDetailResponse.of(orders, processSteps);
 
@@ -276,6 +280,14 @@ public class OrderService {
 		// 예외처리 refactor
 		Orders orders = extractOrder(orderId);
 
+		WaitingOrders waitingOrders = waitingOrderRepository.findByOrders(orders)
+			.orElseThrow(() -> new WaitingOrderException(WaitingOrderErrorCode.WAITING_ORDER_NOT_FOUND));
+
+		// 대기열의 상태가 Waiting이 아니면 주문 취소 불가능
+		if (!waitingOrders.getWaitingStatus().equals(WaitingStatus.WAITING)) {
+			throw new OrderException(OrderErrorCode.ORDER_CANCELLATION_NOT_ALLOWED);
+		}
+
 		// 검증
 		validateOrderOwner(orders, customUserDetails, extractRole(customUserDetails));
 
@@ -295,6 +307,8 @@ public class OrderService {
 
 		orders.setActualDeliveryAt(LocalDateTime.now());
 
+		orderRepository.save(orders);
+
 		// 주문 완료 이벤트 메시지 생성
 		OrderCompletedMyCarEvent event = new OrderCompletedMyCarEvent(orderId);
 		try {
@@ -308,6 +322,22 @@ public class OrderService {
 					e.getMessage(),
 					FailedEventType.MY_CAR));
 		}
+
+	}
+
+	// 수령 완료 상태 변경
+	@Transactional
+	public void changeReceived(CustomUserDetails customUserDetails, Long orderId) {
+
+		Orders orders = extractOrder(orderId);
+
+		validateOrderOwner(orders, customUserDetails, extractRole(customUserDetails));
+
+		orders.setOrderStatus(OrderStatus.RECEIVED);
+
+		orders.setReceivedAt(LocalDateTime.now());
+
+		orderRepository.save(orders);
 
 	}
 
@@ -376,12 +406,12 @@ public class OrderService {
 	}
 
 	// processStep을 빌드하는 메소드
-	private List<OrderDetailResponse.ProcessStep> buildProcessSteps(Role role, Orders orders) {
+	private List<OrderDetailResponse.ProcessStep> buildProcessSteps(Role role, Orders orders, History history) {
 		WaitingOrders waitingOrders = waitingOrderRepository.findByOrders(orders)
 			.orElseThrow(() -> new WaitingOrderException(WaitingOrderErrorCode.WAITING_ORDER_NOT_FOUND));
 
-		History history = historyRepository.findByBodyNumber(orders.getBodyNumber())
-			.orElseThrow(() -> new HistoryException(HistoryErrorCode.HISTORY_NOT_FOUND));
+		// History history = historyRepository.findByBodyNumber(orders.getBodyNumber())
+		// 	.orElseThrow(() -> new HistoryException(HistoryErrorCode.HISTORY_NOT_FOUND));
 
 		List<OrderDetailResponse.ProcessStep> steps = new ArrayList<>();
 
@@ -409,6 +439,11 @@ public class OrderService {
 				"출고 완료",
 				orders.getActualDeliveryAt(),
 				orders.getActualDeliveryAt()
+			));
+			steps.add(OrderDetailResponse.ProcessStep.from(
+				"수령 완료",
+				orders.getReceivedAt(),
+				orders.getReceivedAt()
 			));
 
 			return steps;
@@ -454,6 +489,11 @@ public class OrderService {
 			"출고 완료",
 			orders.getActualDeliveryAt(),
 			orders.getActualDeliveryAt()
+		));
+		steps.add(OrderDetailResponse.ProcessStep.from(
+			"수령 완료",
+			orders.getReceivedAt(),
+			orders.getReceivedAt()
 		));
 
 		return steps;

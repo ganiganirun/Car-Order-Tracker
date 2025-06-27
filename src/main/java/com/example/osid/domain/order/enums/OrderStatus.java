@@ -7,6 +7,6 @@ public enum OrderStatus {
 	COMPLETED, // 주문 완료
 	FAILED, // 주문 처리 실패
 	IN_PRODUCTION,  // 생산중
-	SHIPPED         // 출고완료
-
+	SHIPPED,         // 출고완료
+	RECEIVED        // 수령 완료
 }

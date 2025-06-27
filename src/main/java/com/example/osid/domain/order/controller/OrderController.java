@@ -105,13 +105,24 @@ public class OrderController {
 	}
 
 	// 차량 출고 완료
-	@PatchMapping("/api/order/{orderId}")
+	@PostMapping("/api/order/shipped/{orderId}")
 	@ResponseStatus(HttpStatus.OK)
 	public CommonResponse<Void> changeShipped(
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@PathVariable Long orderId
 	) {
 		orderService.changeShipped(customUserDetails, orderId);
+		return CommonResponse.ok();
+	}
+
+	// 차량 수령 완료
+	@PostMapping("/api/order/received/{orderId}")
+	@ResponseStatus(HttpStatus.OK)
+	public CommonResponse<Void> changeReceived(
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable Long orderId
+	) {
+		orderService.changeReceived(customUserDetails, orderId);
 		return CommonResponse.ok();
 	}
 
