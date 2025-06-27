@@ -28,7 +28,7 @@ public class LicenseKeyInitializer implements ApplicationRunner {
 	 * @param args ApplicationArguments: 실행 인자 (사용되지 않음)
 	 */
 	@Override
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public void run(ApplicationArguments args) {
 		// AVAILABLE 상태 키 개수 조회
 		long count = licenseKeyRepository.countByLicenseStatus(LicenseStatus.AVAILABLE);

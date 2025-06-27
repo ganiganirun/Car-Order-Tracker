@@ -25,7 +25,7 @@ public class LicenseKeyRefillScheduler {
 
 	// @Scheduled(cron = "0 0 * * * *")  // 매시 정각 실행
 	@Scheduled(cron = "0 */1 * * * *")
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public void refillPoolIfNeeded() {
 		long available = licenseKeyRepository.countByLicenseStatus(LicenseStatus.AVAILABLE);
 		if (available < MIN_POOL_SIZE) {

@@ -2,6 +2,7 @@ package com.example.osid.domain.user.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.osid.common.auth.CustomUserDetails;
 import com.example.osid.common.auth.EmailValidator;
@@ -16,7 +17,6 @@ import com.example.osid.domain.user.exception.UserErrorCode;
 import com.example.osid.domain.user.exception.UserException;
 import com.example.osid.domain.user.repository.UserRepository;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -70,7 +70,7 @@ public class UserService {
 		);
 	}
 
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public void updatedUser(
 		CustomUserDetails customUserDetails,
 		UserUpdatedRequestDto userUpdatedRequestDto
@@ -79,7 +79,7 @@ public class UserService {
 		user.updatedUser(userUpdatedRequestDto);
 	}
 
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public void deletedUser(
 		CustomUserDetails customUserDetails,
 		UserDeletedRequestDto userDeletedRequestDto

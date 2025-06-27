@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.osid.common.auth.CustomUserDetails;
 import com.example.osid.common.auth.EmailValidator;
@@ -23,7 +24,6 @@ import com.example.osid.domain.master.exception.MasterException;
 import com.example.osid.domain.master.repository.MasterRepository;
 import com.example.osid.domain.user.repository.UserRepository;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -37,7 +37,7 @@ public class MasterService {
 	private final EmailValidator emailValidator;
 	private final LicenseKeyService licenseKeyService;
 
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public void signUpMaster(MasterSignUpRequestDto masterSignUpRequestDto) {
 
 		// 공통된 이메일이 있는지 확인 ( Master, Dealer, User )
@@ -93,7 +93,7 @@ public class MasterService {
 		);
 	}
 
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public void updatedMaster(
 		CustomUserDetails customUserDetails,
 		MasterUpdatedRequestDto masterUpdatedRequestDto
@@ -102,7 +102,7 @@ public class MasterService {
 		master.updatedMaster(masterUpdatedRequestDto);
 	}
 
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public void deletedMaster(
 		CustomUserDetails customUserDetails,
 		MasterDeletedRequestDto masterDeletedRequestDto
