@@ -19,7 +19,7 @@ public class CacheConfig {
 		CaffeineCacheManager cacheManager = new CaffeineCacheManager("models", "options");
 		cacheManager.setCaffeine(Caffeine.newBuilder()
 			.maximumSize(100)
-			.expireAfterWrite(1, TimeUnit.MINUTES) // ttl 테스트용 1분
+			.expireAfterWrite(30, TimeUnit.MINUTES)
 		);
 		cacheManager.setAllowNullValues(false);
 		return cacheManager;
