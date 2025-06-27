@@ -25,6 +25,11 @@ import com.example.osid.domain.user.entity.User;
 import com.example.osid.domain.user.exception.UserErrorCode;
 import com.example.osid.domain.user.exception.UserException;
 import com.example.osid.domain.user.repository.UserRepository;
+import com.example.osid.domain.waitingorder.entity.WaitingOrders;
+import com.example.osid.domain.waitingorder.enums.WaitingStatus;
+import com.example.osid.domain.waitingorder.exception.WaitingOrderErrorCode;
+import com.example.osid.domain.waitingorder.exception.WaitingOrderException;
+import com.example.osid.domain.waitingorder.repository.WaitingOrderRepository;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
 import com.siot.IamportRestClient.request.CancelData;
@@ -44,6 +49,7 @@ public class PaymentService {
 	private final PaymentRepository paymentRepository;
 	private final UserRepository userRepository;
 	private final ApplicationEventPublisher eventPublisher;
+	private final WaitingOrderRepository waitingOrderRepository;
 
 	@Value("${IMP_API_KEY}")
 	private String apiKey;
@@ -61,7 +67,7 @@ public class PaymentService {
 	private static final int FULL_REFUND = 0;
 
 	// 결제 성공 처리
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public void processPaymentDone(PaymentRequestDto.Paid request, IamportResponse<Payment> payment) throws
 		IamportResponseException,
 		IOException {
@@ -130,11 +136,19 @@ public class PaymentService {
 	}
 
 	// 결제 환불
-	@Transactional
+	@Transactional("dataTransactionManager")
 	public void cancelReservation(PaymentRequestDto.Cancel cancelReq) throws IamportResponseException, IOException {
 
 		Orders currentOrder = orderRepository.findByMerchantUid(cancelReq.getMerchantUid())
 			.orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
+
+		WaitingOrders waitingOrders = waitingOrderRepository.findByOrders(currentOrder)
+			.orElseThrow(() -> new WaitingOrderException(WaitingOrderErrorCode.WAITING_ORDER_NOT_FOUND));
+
+		// 대기열의 상태가 Waiting이 아니면 주문 취소 불가능
+		if (!waitingOrders.getWaitingStatus().equals(WaitingStatus.WAITING)) {
+			throw new OrderException(OrderErrorCode.ORDER_CANCELLATION_NOT_ALLOWED);
+		}
 
 		IamportResponse<Payment> response = iamportClient.paymentByImpUid(currentOrder.getPayments().getImpUid());
 
@@ -160,6 +174,8 @@ public class PaymentService {
 		payments.changePaymentBySuccess(PaymentStatus.REFUNDED);
 
 		currentOrder.setOrderStatus(OrderStatus.REFUNDED);
+
+		waitingOrderRepository.delete(waitingOrders);
 
 	}
 

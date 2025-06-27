@@ -26,7 +26,7 @@ public class WatingOrderListener {
 	private final OrderRepository orderRepository;
 
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	@Transactional(transactionManager = "dataTransactionManager", propagation = Propagation.REQUIRES_NEW)
 	public void handleWatingOrderSaved(OrderPaidEvent event) {
 
 		Orders orders = orderRepository.findById(event.getOrderId())
