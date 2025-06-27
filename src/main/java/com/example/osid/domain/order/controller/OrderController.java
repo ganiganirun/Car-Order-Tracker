@@ -105,7 +105,7 @@ public class OrderController {
 	}
 
 	// 차량 출고 완료
-	@PatchMapping("/api/order/shipped/{orderId}")
+	@PostMapping("/api/order/shipped/{orderId}")
 	@ResponseStatus(HttpStatus.OK)
 	public CommonResponse<Void> changeShipped(
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -116,7 +116,7 @@ public class OrderController {
 	}
 
 	// 차량 수령 완료
-	@PatchMapping("/api/order/received/{orderId}")
+	@PostMapping("/api/order/received/{orderId}")
 	@ResponseStatus(HttpStatus.OK)
 	public CommonResponse<Void> changeReceived(
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
