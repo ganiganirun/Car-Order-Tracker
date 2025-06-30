@@ -2,12 +2,11 @@ package com.example.osid.domain.mycar.controller;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.osid.common.auth.CustomUserDetails;
+import com.example.osid.common.request.CommonPageRequest;
 import com.example.osid.common.response.CommonResponse;
 import com.example.osid.domain.mycar.dto.MyCarListResponse;
 import com.example.osid.domain.mycar.dto.MyCarResponse;
@@ -46,8 +46,9 @@ public class MyCarController {
 	@ResponseStatus(HttpStatus.OK)
 	public CommonResponse<Page<MyCarListResponse>> findAllMyCar(
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
-		@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+		@ModelAttribute CommonPageRequest commonPageRequest
 	) {
+		Pageable pageable = commonPageRequest.toPageable();
 		return CommonResponse.ok(myCarService.findAllMyCar(customUserDetails, pageable));
 	}
 

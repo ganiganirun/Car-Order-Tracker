@@ -15,6 +15,7 @@ import org.springframework.batch.item.database.JpaItemWriter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -24,14 +25,13 @@ import com.example.osid.domain.history.dto.PredictResponse;
 import com.example.osid.domain.history.entity.History;
 import com.example.osid.domain.order.entity.Orders;
 import com.example.osid.domain.order.enums.OrderStatus;
-import com.example.osid.domain.order.repository.OrderRepository;
 import com.example.osid.domain.waitingorder.entity.WaitingOrders;
 import com.example.osid.domain.waitingorder.enums.WaitingStatus;
-import com.example.osid.domain.waitingorder.repository.WaitingOrderRepository;
 
 import io.netty.channel.ChannelOption;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 
 @Configuration
@@ -42,24 +42,20 @@ public class BatchConfig {
 	private final JobRepository jobRepository;
 	private final PlatformTransactionManager txManager;
 	private final JpaClearListener jpaClearListener;
-	private final WaitingOrderRepository waitingOrderRepository;
-	private final OrderRepository orderRepository;
 	private final HttpClient httpClient;
 	private final WebClient webClient;
 
 	public BatchConfig(JobRepository jobRepository,
 		@Qualifier("dataTransactionManager") PlatformTransactionManager txManager,
-		JpaClearListener jpaClearListener, WaitingOrderRepository waitingOrderRepository,
-		OrderRepository orderRepository) {
+		JpaClearListener jpaClearListener) {
 		this.jobRepository = jobRepository;
 		this.txManager = txManager;
 		this.jpaClearListener = jpaClearListener;
-		this.waitingOrderRepository = waitingOrderRepository;
-		this.orderRepository = orderRepository;
 
+		// 외부 API 장애, 네트워크 이슈로 인한 배치 지연/무한대기 방지 목적
 		this.httpClient = HttpClient.create()
-			.responseTimeout(Duration.ofSeconds(25))         // 서버 응답 25s 제한
-			.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000);
+			.responseTimeout(Duration.ofSeconds(25)) // 서버 응답 최대 대기시간 25초
+			.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000); // TCP 연결 시도 최대 5초
 		this.webClient = WebClient.builder()
 			.baseUrl("https://mlp-learning-test.onrender.com")
 			.clientConnector(new ReactorClientHttpConnector(httpClient))
@@ -129,22 +125,46 @@ public class BatchConfig {
 				orders.getModel().getCategory().toString(),
 				orders.getOrderOptions());
 
-			PredictResponse response = webClient.post()
-				.uri("/predict_all")
-				.bodyValue(predictRequest)
-				.retrieve()
-				.bodyToMono(PredictResponse.class)
-				.block();
+			History history = null;
+			try {
+				PredictResponse response = webClient.post()
+					.uri("/predict_all")
+					.bodyValue(predictRequest)
+					.retrieve()
+					.onStatus(HttpStatusCode::is4xxClientError, clientResponse ->
+						clientResponse.bodyToMono(String.class)
+							.defaultIfEmpty("")
+							.map(body -> new RuntimeException("ML API 4xx 오류: " + body))
+							.flatMap(Mono::error)
+					)
+					.onStatus(HttpStatusCode::is5xxServerError, clientResponse ->
+						clientResponse.bodyToMono(String.class)
+							.defaultIfEmpty("")
+							.map(body -> new RuntimeException("ML API 5xx 오류: " + body))
+							.flatMap(Mono::error)
+					)
+					.bodyToMono(PredictResponse.class)
+					.block(Duration.ofSeconds(30));
 
-			History history = new History();
-			history.setBodyNumber(orders.getBodyNumber());
-			List<PredictResponse.Stage> stages = response.getStages();
-			history.setStage1(stages.get(0).getTotalWithDelay());
-			history.setStage2(stages.get(1).getTotalWithDelay());
-			history.setStage3(stages.get(2).getTotalWithDelay());
-			history.setStage4(stages.get(3).getTotalWithDelay());
-			history.setStage5(stages.get(4).getTotalWithDelay());
-			history.setTotalDuration(response.getTotalDuration());
+				// 응답값 검증 (null, stage 개수 등)
+				if (response == null || response.getStages() == null || response.getStages().size() < 5) {
+					log.error("ML 예측 응답값 부족: input={}, response={}", predictRequest, response);
+					throw new IllegalStateException("예측 API 응답 값이 부족함: " + response);
+				}
+
+				history = new History();
+				history.setBodyNumber(orders.getBodyNumber());
+				List<PredictResponse.Stage> stages = response.getStages();
+				history.setStage1(stages.get(0).getTotalWithDelay());
+				history.setStage2(stages.get(1).getTotalWithDelay());
+				history.setStage3(stages.get(2).getTotalWithDelay());
+				history.setStage4(stages.get(3).getTotalWithDelay());
+				history.setStage5(stages.get(4).getTotalWithDelay());
+				history.setTotalDuration(response.getTotalDuration());
+			} catch (Exception e) {
+				log.error("ML API 호출 실패: 주문 정보={}, 요청데이터={}, 에러={}", orders, predictRequest, e.getMessage(), e);
+				throw e;
+			}
 			// log.info("{}, pd: {}, twd: {}, tdh: {}",
 			// 	stages.get(0).getStage(),
 			// 	stages.get(0).getPredDuration(),

@@ -1,0 +1,68 @@
+@host = http://localhost
+@port = 8080
+@baseUrl = {{host}}:{{port}}
+
+### 상담 신청 요청
+POST {{baseUrl}}/api/users/counsels
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "EV 차량 옵션 문의",
+  "userContent": "전기차에 대해 옵션 선택을 어떻게 해야 할까요?"
+}
+
+### 딜러 지정 상담 신청
+POST {{baseUrl}}/api/users/counsels
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "하이브리드 차량 옵션 상담",
+  "userContent": "하이브리드 차량의 세금 혜택과 유지비가 궁금합니다.",
+  "dealerId": 1
+}
+
+### 유저 상담 조회
+GET {{baseUrl}}/api/users/counsels
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### 딜러 상담 조회
+GET {{baseUrl}}/api/dealers/counsels
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### 상담 수락 (딜러)
+PATCH {{baseUrl}}/api/dealers/counsels/31/accept
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### 상담 거절 (딜러)
+PATCH {{baseUrl}}/api/dealers/counsels/26/reject
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### 상담 취소 (유저)
+PATCH {{baseUrl}}/api/users/counsels/1/cancel
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### 상담 메모 작성 및 상담 완료 (딜러)
+PATCH {{baseUrl}}/api/dealers/counsels/30/memo
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "memo": "전화 상담 완료. EV 모델 추천 및 옵션 설명 진행함.11111"
+}
+
+### 상담 메모 수정 (딜러)
+PUT {{baseUrl}}/api/dealers/counsels/31/memo
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "memo": "수정된 상담 내용입니다."
+}
+
