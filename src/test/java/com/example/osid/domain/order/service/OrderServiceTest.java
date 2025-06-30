@@ -32,6 +32,9 @@ import com.example.osid.domain.option.exception.OptionErrorCode;
 import com.example.osid.domain.option.exception.OptionException;
 import com.example.osid.domain.option.repository.OptionRepository;
 import com.example.osid.domain.order.dto.request.OrderRequestDto;
+import com.example.osid.domain.order.entity.OrderOption;
+import com.example.osid.domain.order.entity.Orders;
+import com.example.osid.domain.order.enums.OrderStatus;
 import com.example.osid.domain.order.repository.OrderRepository;
 import com.example.osid.domain.order.repository.OrderSearch;
 import com.example.osid.domain.user.entity.User;
@@ -212,7 +215,7 @@ public class OrderServiceTest {
 			.color(ModelColor.RED)
 			.description("설명")
 			.image("/image.png")
-			.category(ModelCategory.SAFETY)
+			.category(ModelCategory.ELECTRIC)
 			.seatCount("5")
 			.price(100000000L)
 			.build();
@@ -275,7 +278,7 @@ public class OrderServiceTest {
 			.color(ModelColor.RED)
 			.description("설명")
 			.image("/image.png")
-			.category(ModelCategory.SAFETY)
+			.category(ModelCategory.ELECTRIC)
 			.seatCount("5")
 			.price(100000000L)
 			.build();
@@ -305,6 +308,19 @@ public class OrderServiceTest {
 			"서울시 강남구"
 		);
 
+		Orders orders = Orders.builder()
+			.address(requestDto.getAddress())
+			.totalPrice(fakeModel.getPrice() + option1.getPrice() + option2.getPrice())
+			.orderStatus(OrderStatus.ORDERED)
+			.user(fakeUser)
+			.dealer(fakeDealer)
+			.model(fakeModel)
+			.orderOptions(List.of(
+				new OrderOption(null, option1),
+				new OrderOption(null, option2)
+			))
+			.build();
+
 		given(dealerRepository.findByEmailAndIsDeletedFalse(dealerEmail))
 			.willReturn(Optional.of(fakeDealer));
 
@@ -316,6 +332,9 @@ public class OrderServiceTest {
 
 		given(optionRepository.findByIdIn(requestDto.getOption()))
 			.willReturn(List.of(option1, option2));
+
+		given(orderRepository.save(any(Orders.class)))
+			.willReturn(orders);
 
 		// when
 		assertDoesNotThrow(() -> orderService.createOrder(userDetails, requestDto));
