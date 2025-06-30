@@ -1,7 +1,10 @@
 package com.example.osid.domain.counsel.exception;
 
-public class CounselException extends RuntimeException {
-  public CounselException(CounselErrorCode message) {
-    super(message);
+import com.example.osid.common.exception.BaseCode;
+import com.example.osid.common.exception.CustomException;
+
+public class CounselException extends CustomException {
+  public CounselException(BaseCode baseCode) {
+    super(baseCode);
   }
 }
