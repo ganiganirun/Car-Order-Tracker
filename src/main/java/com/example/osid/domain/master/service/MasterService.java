@@ -77,7 +77,9 @@ public class MasterService {
 				dealer.getEmail(),
 				dealer.getName(),
 				dealer.getPhoneNumber(),
-				dealer.getBranch()
+				dealer.getBranch(),
+				dealer.getRole(),
+				dealer.getCreatedAt()
 			);
 			dealerList.add(dealerDto);
 		}

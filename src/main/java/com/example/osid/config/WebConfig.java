@@ -1,6 +1,7 @@
 package com.example.osid.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -39,4 +40,14 @@ public class WebConfig implements WebMvcConfigurer {
 				"/api/users/signup"     // User 회원가입
 			); // 필요에 따라 제외 경로 조정
 	}
+
+	@Override
+	public void addCorsMappings(CorsRegistry registry) {
+		registry.addMapping("/api/**")
+				.allowedOriginPatterns("http://127.0.0.1:5000") // ← 요걸로 수정!
+				.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+				.allowedHeaders("*")
+				.allowCredentials(true);
+	}
+
 }

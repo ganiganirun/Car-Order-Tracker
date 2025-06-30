@@ -13,6 +13,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.example.osid.common.auth.authentication.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
@@ -25,10 +32,12 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
-			.csrf(csrf -> csrf.disable())
-			.sessionManagement(sm ->
-				sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-			)
+				.cors(withDefaults())  // ✅ 정확한 방식
+
+				.csrf(csrf -> csrf.disable())
+				.sessionManagement(sm ->
+						sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+				)
 			.authorizeHttpRequests(auth -> auth
 				// 1) 모두 가능
 				.requestMatchers("/payment-test.html")
@@ -78,6 +87,20 @@ public class SecurityConfig {
 			);
 
 		return http.build();
+	}
+
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration config = new CorsConfiguration();
+		config.setAllowedOrigins(List.of("http://127.0.0.1:5000")); // ✅ 여기도 명시
+		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+		config.setAllowedHeaders(List.of("*"));
+		config.setAllowCredentials(true);
+
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/api/**", config);
+
+		return source;
 	}
 
 }
