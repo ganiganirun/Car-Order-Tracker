@@ -2,11 +2,10 @@ package com.example.osid.domain.option.controller;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.osid.common.request.CommonPageRequest;
 import com.example.osid.common.response.CommonResponse;
 import com.example.osid.domain.option.dto.OptionMasterResponse;
 import com.example.osid.domain.option.dto.OptionRequest;
@@ -56,9 +56,9 @@ public class OptionController {
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
 	public CommonResponse<Page<OptionResponse>> findAllOption(
-		@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+		@ModelAttribute CommonPageRequest commonPageRequest
 	) {
-
+		Pageable pageable = commonPageRequest.toPageableForAnonymousUser();
 		return CommonResponse.ok(optionService.findAllOption(pageable));
 	}
 
@@ -90,10 +90,11 @@ public class OptionController {
 	@GetMapping("/master")
 	@ResponseStatus(HttpStatus.OK)
 	public CommonResponse<Page<OptionMasterResponse>> findAllOptionForMaster(
-		@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+		@ModelAttribute CommonPageRequest commonPageRequest,
 		@RequestParam(required = false, defaultValue = "all", name = "deleted") String deletedFilter
 	) {
 
+		Pageable pageable = commonPageRequest.toPageable();
 		return CommonResponse.ok(optionService.findAllOptionForMaster(pageable, deletedFilter));
 	}
 }
