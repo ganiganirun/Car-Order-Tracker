@@ -28,7 +28,7 @@ public class CounselEmailListener {
 
         try {
             Counsel counsel = counselRepository.findWithDealerAndUserById(event.getCounselId())
-                    .orElseThrow(() -> new IllegalArgumentException("상담 정보를 찾을 수 없습니다: " + event.getCounselId()));
+                    .orElseThrow(() -> new CounselException(CounselErrorCode.COUNSEL_NOT_FOUND));
 
             emailService.sendCounselNotificationToDealer(counsel);
 
