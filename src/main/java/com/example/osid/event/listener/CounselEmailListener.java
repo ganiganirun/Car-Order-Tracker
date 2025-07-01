@@ -5,6 +5,8 @@ import com.example.osid.domain.counsel.entity.Counsel;
 import com.example.osid.domain.counsel.repository.CounselRepository;
 import com.example.osid.domain.email.service.EmailService;
 import com.example.osid.event.CounselApplicationEvent;
+import com.example.osid.domain.counsel.exception.CounselErrorCode;
+import com.example.osid.domain.counsel.exception.CounselException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
