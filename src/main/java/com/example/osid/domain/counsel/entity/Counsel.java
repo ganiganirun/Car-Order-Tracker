@@ -34,6 +34,7 @@ public class Counsel extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private CounselStatus counselStatus;
 
+    @Column(columnDefinition = "TEXT")
     private String userContent;
 
     @Column(columnDefinition = "TEXT")

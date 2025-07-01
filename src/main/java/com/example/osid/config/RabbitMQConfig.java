@@ -35,6 +35,11 @@ public class RabbitMQConfig {
 	public static final String EMAIL_DELAY_QUEUE = "order.completed.email.retry.queue";
 	public static final String EMAIL_DELAY_ROUTING_KEY = "order.completed.email.retry";
 
+	// 상담 이메일
+	public static final String COUNSEL_EXCHANGE = "counsel.exchange";
+	public static final String COUNSEL_QUEUE = "counsel.email.queue";
+	public static final String COUNSEL_ROUTING_KEY = "counsel.email.notify";
+
 	@Bean
 	public DirectExchange orderExchange() {
 		return new DirectExchange(EXCHANGE);
@@ -48,6 +53,11 @@ public class RabbitMQConfig {
 	@Bean
 	public DirectExchange emailDlxExchange() {
 		return new DirectExchange(EMAIL_DLX);
+	}
+
+	@Bean
+	public DirectExchange counselExchange() {
+		return new DirectExchange(COUNSEL_EXCHANGE);
 	}
 
 	// 주문 완료 처리용
@@ -77,6 +87,11 @@ public class RabbitMQConfig {
 			.withArgument("x-dead-letter-routing-key", EMAIL_ROUTING_KEY)
 			.withArgument("x-message-ttl", 5000) // 5초 delay
 			.build();
+	}
+
+	@Bean
+	public Queue counselQueue() {
+		return QueueBuilder.durable(COUNSEL_QUEUE).build();
 	}
 
 	// DLQ
@@ -128,5 +143,13 @@ public class RabbitMQConfig {
 			.bind(emailRetryQueue())
 			.to(orderExchange())
 			.with(EMAIL_DELAY_ROUTING_KEY);
+	}
+
+	@Bean
+	public Binding counselBinding() {
+		return BindingBuilder
+				.bind(counselQueue())
+				.to(counselExchange()) // 상담 전용 익스체인지 사용
+				.with(COUNSEL_ROUTING_KEY);
 	}
 }
