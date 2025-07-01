@@ -19,7 +19,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 import com.example.osid.config.RabbitMQConfig;
-import com.example.osid.event.OrderCompletedEmailEvent;
+import com.example.osid.event.OrderCompletedMyCarEvent;
 import com.example.osid.event.dto.FailedEventResponse;
 import com.example.osid.event.entity.FailedEvent;
 import com.example.osid.event.enums.FailedEventType;
@@ -71,7 +71,7 @@ class FailedEventServiceTest {
 
 		verify(rabbitTemplate, times(1))
 			.convertAndSend(eq(RabbitMQConfig.EXCHANGE), eq(RabbitMQConfig.MY_CAR_ROUTING_KEY),
-				any(OrderCompletedEmailEvent.class));
+				any(OrderCompletedMyCarEvent.class));
 
 		assertEquals("OK", result);
 	}
