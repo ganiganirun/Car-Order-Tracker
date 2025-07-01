@@ -1,6 +1,7 @@
 package com.example.osid.domain.counsel.service;
 
 import com.example.osid.common.auth.CustomUserDetails;
+import com.example.osid.config.RabbitMQConfig;
 import com.example.osid.domain.counsel.dto.request.CounselRequestDto;
 import com.example.osid.domain.counsel.dto.response.CounselResponseDto;
 import com.example.osid.domain.counsel.entity.Counsel;
@@ -16,12 +17,20 @@ import com.example.osid.domain.user.entity.User;
 import com.example.osid.domain.user.exception.UserErrorCode;
 import com.example.osid.domain.user.exception.UserException;
 import com.example.osid.domain.user.repository.UserRepository;
+import com.example.osid.domain.email.service.EmailService;
+import com.example.osid.event.CounselApplicationEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.format.DateTimeFormatter;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CounselService {
@@ -29,16 +38,38 @@ public class CounselService {
     private final UserRepository userRepository;
     private final DealerRepository dealerRepository;
     private final CounselRepository counselRepository;
+    private final EmailService emailService;
+    // RabbitMQ 메시지 발송을 위한 RabbitTemplate (조건부 주입)
+    @Autowired(required = false)
+    private RabbitTemplate rabbitTemplate;
 
     // 상담 신청(유저)
     public CounselResponseDto applyCounsel(CustomUserDetails customUserDetails, CounselRequestDto requestDto) {
-        
+
         User user = getUserByUserId(customUserDetails.getId());
 
         // 지정 딜러가 있으면 정보 조회 OR 없으면 NULL 반환
         Dealer dealer = requestDto.getDealerId() != null ? getDealerByDealerId(requestDto.getDealerId()) : null;
 
         Counsel counsel = new Counsel(user, dealer, requestDto.getTitle(), requestDto.getUserContent(), CounselStatus.APPLICATION_COMPLETED);
+        Counsel savedCounsel = counselRepository.save(counsel);
+
+        // 딜러가 선택된 경우 이메일 알림 발송 (RabbitMQ 또는 직접 발송)
+        if (dealer != null) {
+            log.info("딜러가 선택된 상담 신청입니다. 이메일 알림을 발송합니다. 상담 ID: {}, 딜러 ID: {}",
+                    savedCounsel.getId(), dealer.getId());
+            try {
+                sendCounselNotification(savedCounsel);
+            } catch (Exception e) {
+                // 이메일 발송 실패가 상담 신청을 방해하지 않도록 로그만 남김
+                log.error("딜러 이메일 알림 발송 중 오류 발생. 상담 ID: {}, 딜러 ID: {}",
+                        savedCounsel.getId(), dealer.getId(), e);
+            }
+        } else {
+            log.debug("딜러가 선택되지 않은 상담 신청입니다. 이메일 알림을 발송하지 않습니다. 상담 ID: {}",
+                    savedCounsel.getId());
+        }
+
         return CounselResponseDto.from(counselRepository.save(counsel));
     }
 
@@ -197,6 +228,35 @@ public class CounselService {
 
         return dealerRepository.findById(dealerId)
                 .orElseThrow(() -> new DealerException(DealerErrorCode.DEALER_NOT_FOUND));
+    }
+
+    // 상담 알림 발송 메서드 (RabbitMQ 또는 직접 발송)
+    private void sendCounselNotification(Counsel counsel) {
+        if (rabbitTemplate != null) {
+            log.info("RabbitMQ를 통한 상담 신청 알림 발송. 상담 ID: {}", counsel.getId());
+
+            CounselApplicationEvent event = new CounselApplicationEvent(
+                    counsel.getId(),
+                    counsel.getDealer().getId(),
+                    counsel.getUser().getName(),
+                    counsel.getDealer().getName(),
+                    counsel.getDealer().getEmail(),
+                    counsel.getTitle(),
+                    counsel.getUserContent(),
+                    counsel.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+            );
+
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.COUNSEL_EXCHANGE,
+                    RabbitMQConfig.COUNSEL_ROUTING_KEY,
+                    event
+            );
+
+            log.info("RabbitMQ 메시지 발송 완료. 상담 ID: {}", counsel.getId());
+        } else {
+            log.info("직접 이메일 발송. 상담 ID: {}", counsel.getId());
+            emailService.sendCounselNotificationToDealer(counsel);
+        }
     }
 }
 

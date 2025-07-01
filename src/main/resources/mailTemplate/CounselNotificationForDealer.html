@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>새로운 상담 신청 알림</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet">
+</head>
+<body style="font-family: 'Noto Sans', sans-serif; background-color: #f3f3f3; padding: 20px;">
+    <div style="max-width: 600px; margin: auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px #ccc;">
+        <h2 style="color: #34495e;">📢 새로운 상담 신청이 접수되었습니다</h2>
+        <p><strong>{{딜러이름}}</strong> 님, 새로운 상담 신청이 접수되었습니다.</p>
+        
+        <hr style="margin: 20px 0;">
+        
+        <p><strong>고객 이름:</strong> {{고객이름}}</p>
+        <p><strong>상담 제목:</strong> {{상담제목}}</p>
+        <p><strong>상담 내용:</strong></p>
+        <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #007bff; margin: 10px 0;">
+            {{상담내용}}
+        </div>
+        <p><strong>신청 일시:</strong> {{신청일시}}</p>
+        
+        <hr style="margin: 20px 0;">
+        
+        <p>딜러 관리 시스템에서 상담 내용을 확인하고 적절한 응답을 제공해 주시기 바랍니다.</p>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <a href="#" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                상담 관리 시스템으로 이동
+            </a>
+        </div>
+        
+        <hr style="margin: 20px 0;">
+        
+        <p style="color: #888; font-size: 14px;">
+            이 메일은 자동으로 발송된 메일입니다. 회신하지 마세요.<br>
+            문의사항이 있으시면 고객센터로 연락 주세요.
+        </p>
+    </div>
+</body>
+</html>
