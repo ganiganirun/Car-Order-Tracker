@@ -5,6 +5,8 @@ import com.example.osid.domain.counsel.entity.Counsel;
 import com.example.osid.domain.counsel.repository.CounselRepository;
 import com.example.osid.domain.email.service.EmailService;
 import com.example.osid.event.CounselApplicationEvent;
+import com.example.osid.domain.counsel.exception.CounselErrorCode;
+import com.example.osid.domain.counsel.exception.CounselException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +30,7 @@ public class CounselEmailListener {
 
         try {
             Counsel counsel = counselRepository.findWithDealerAndUserById(event.getCounselId())
-                    .orElseThrow(() -> new IllegalArgumentException("상담 정보를 찾을 수 없습니다: " + event.getCounselId()));
+                    .orElseThrow(() -> new CounselException(CounselErrorCode.COUNSEL_NOT_FOUND));
 
             emailService.sendCounselNotificationToDealer(counsel);
 
