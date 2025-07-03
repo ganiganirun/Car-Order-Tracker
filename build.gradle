@@ -117,3 +117,8 @@ sourceSets {
 }
 
 compileJava.dependsOn('clean')
+
+springBoot {
+    // 실제 @SpringBootApplication 붙은 클래스의 FQCN 으로 바꿔주세요
+    mainClass = 'com.example.OsidApplication'
+}
