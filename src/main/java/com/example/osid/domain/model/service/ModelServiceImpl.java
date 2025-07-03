@@ -1,5 +1,6 @@
 package com.example.osid.domain.model.service;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +27,7 @@ public class ModelServiceImpl implements ModelService {
 
 	//모델 생성
 	@Override
+	@CacheEvict(value = "models", allEntries = true)
 	@Transactional("dataTransactionManager")
 	@PreAuthorize("hasRole('MASTER')")
 	public void createModel(ModelCreateRequest request) {
