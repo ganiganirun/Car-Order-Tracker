@@ -1,5 +1,6 @@
 package com.example.osid.domain.option.service;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +28,7 @@ public class OptionServiceImpl implements OptionService {
 	@Override
 	@Transactional(value = "dataTransactionManager")
 	@PreAuthorize("hasRole('MASTER')")
+	@CacheEvict(value = "options", allEntries = true)
 	public void createOption(OptionRequest request) {
 		Option option = new Option(request.getName(), request.getDescription(), request.getImage(),
 			request.getCategory(), request.getPrice());
